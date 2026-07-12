@@ -134,17 +134,34 @@ export async function chatWithSwuAI(
     };
   } catch (error) {
     const err = error as any;
+    
+    // Check if it is a real Cloudflare HTML block (which contains HTML tags)
+    const errBody = err.response?.body;
+    const isHtmlBlock = typeof errBody === "string" && isHtmlOrCloudflare(errBody);
+    
     if (
+      isHtmlBlock || 
       err.message?.includes("ติดด่านป้องกัน Cloudflare") ||
-      (err.response && (err.response.statusCode === 403 || err.response.statusCode === 503)) ||
-      err.message?.includes("403") ||
-      err.message?.includes("503")
+      (err.message && (err.message.includes("503") || err.message.includes("502")))
     ) {
       throw new Error("ติดด่านป้องกัน Cloudflare (403/503 Just a Moment) ของเซิร์ฟเวอร์มหาวิทยาลัย (กรุณาเชื่อมต่อ SWU VPN หรือตรวจสอบสิทธิ์การเข้าถึง หากใช้ Vercel แนะนำให้ทดสอบรันแบบ Local บนคอมพิวเตอร์ของคุณแทน เพื่อเลี่ยงการบล็อกไอพีโฮสติ้งของ Vercel)");
     }
     
+    // If it is a real SWU AI error returned as JSON (such as 403 Forbidden with details)
     if (err.response) {
-      throw new Error(`SWU chat request failed: ${err.response.statusCode} ${JSON.stringify(err.response.body)}`);
+      const statusCode = err.response.statusCode;
+      const bodyData = err.response.body;
+      
+      if (bodyData && typeof bodyData === "object") {
+        if (bodyData.detail) {
+          throw new Error(`SWU AI (Error ${statusCode}): ${bodyData.detail}`);
+        }
+        if (bodyData.error) {
+          throw new Error(`SWU AI (Error ${statusCode}): ${bodyData.error}`);
+        }
+      }
+      
+      throw new Error(`SWU chat request failed: ${statusCode} ${JSON.stringify(bodyData)}`);
     }
     throw new Error(`SWU chat request failed: ${err.message}`);
   }
