@@ -508,14 +508,14 @@ export default function PatientHealthPage() {
                     className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 text-center p-3 transition-all hover:bg-sky-100/50"
                   >
                     <Camera className="h-7 w-7 text-sky-600" />
-                    <span className="mt-2 text-xs font-bold text-slate-700">📷 ถ่ายรูปเครื่องวัด</span>
+                    <span className="mt-2 text-xs font-bold text-slate-700">ถ่ายรูปเครื่องวัด</span>
                     <p className="text-[9px] text-slate-500 mt-0.5">เปิดกล้องถ่ายภาพทันที</p>
                   </button>
                   
                   {/* File Upload Button */}
                   <label className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center p-3 transition-all hover:bg-slate-100">
                     <Upload className="h-7 w-7 text-slate-500" />
-                    <span className="mt-2 text-xs font-bold text-slate-700">📁 อัปโหลดรูปภาพ</span>
+                    <span className="mt-2 text-xs font-bold text-slate-700">อัปโหลดรูปภาพ</span>
                     <p className="text-[9px] text-slate-500 mt-0.5">เลือกจากคลังรูปภาพ</p>
                     <input
                       type="file"
@@ -625,14 +625,14 @@ export default function PatientHealthPage() {
                     className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 text-center p-3 transition-all hover:bg-sky-100/50"
                   >
                     <Camera className="h-7 w-7 text-sky-600" />
-                    <span className="mt-2 text-xs font-bold text-slate-700">📷 ถ่ายรูปอาหาร</span>
+                    <span className="mt-2 text-xs font-bold text-slate-700">ถ่ายรูปอาหาร</span>
                     <p className="text-[9px] text-slate-500 mt-0.5">เปิดกล้องถ่ายภาพทันที</p>
                   </button>
                   
                   {/* File Upload Button */}
                   <label className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center p-3 transition-all hover:bg-slate-100">
                     <Upload className="h-7 w-7 text-slate-500" />
-                    <span className="mt-2 text-xs font-bold text-slate-700">📁 อัปโหลดรูปภาพ</span>
+                    <span className="mt-2 text-xs font-bold text-slate-700">อัปโหลดรูปภาพ</span>
                     <p className="text-[9px] text-slate-500 mt-0.5">เลือกจากคลังรูปภาพ</p>
                     <input
                       type="file"
