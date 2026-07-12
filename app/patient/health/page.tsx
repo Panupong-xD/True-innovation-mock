@@ -109,12 +109,11 @@ export default function PatientHealthPage() {
     setDeviceImagePreview(base64Data);
 
     try {
-      const rawBase64 = base64Data.split(",")[1] || base64Data;
       const filesArray = [
         {
           type: "image",
           name: "vitals_camera.jpg",
-          data: rawBase64
+          data: base64Data
         }
       ];
 
@@ -203,12 +202,11 @@ export default function PatientHealthPage() {
     setScannerReady(true);
 
     try {
-      const rawBase64 = base64Data.split(",")[1] || base64Data;
       const filesArray = [
         {
           type: "image",
           name: "food_camera.jpg",
-          data: rawBase64
+          data: base64Data
         }
       ];
       setFoodFilesPayload(filesArray);
@@ -754,7 +752,11 @@ function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
     setError(null);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: { 
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
         audio: false
       });
       setStream(mediaStream);
@@ -779,13 +781,13 @@ function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
       const video = videoRef.current;
       const canvas = document.createElement("canvas");
       
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
       
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL("image/jpeg", 0.7);
+        const base64 = canvas.toDataURL("image/jpeg", 0.85);
         onCapture(base64);
         onClose();
       }
@@ -795,46 +797,77 @@ function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 p-4">
-      <div className="relative flex w-full max-w-md flex-col items-center rounded-3xl bg-slate-900 p-6 text-white shadow-2xl border border-slate-800 animate-in fade-in zoom-in-95 duration-200">
-        <button 
-          className="absolute right-4 top-4 rounded-full bg-slate-800 p-2 text-slate-400 hover:text-white transition-colors" 
-          onClick={onClose}
-          type="button"
-        >
-          <X className="h-5 w-5" />
-        </button>
+    <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-slate-950 p-0 sm:p-4">
+      {/* Full screen mobile shell or centered card on desktop */}
+      <div className="relative flex h-full w-full max-w-md flex-col justify-between bg-black text-white shadow-2xl sm:h-[85vh] sm:rounded-3xl sm:border sm:border-slate-800 overflow-hidden">
+        
+        {/* Top Header - Glassmorphism floating panel */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4 backdrop-blur-[2px]">
+          <div className="flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full bg-sky-500 animate-pulse" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400">Live AI Scanner</h3>
+          </div>
+          <button 
+            className="rounded-full bg-black/40 p-2 text-slate-300 hover:text-white backdrop-blur-md transition-all hover:bg-black/60 active:scale-95" 
+            onClick={onClose}
+            type="button"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-        <h3 className="mb-4 text-center text-sm font-bold flex items-center gap-1.5">
-          <Camera className="h-4 w-4 text-sky-400 animate-pulse" />
-          <span>กล้องถ่ายภาพสุขภาพ AI</span>
-        </h3>
-
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-black border border-slate-800 flex items-center justify-center">
+        {/* Video Viewfinder - Fills the container space */}
+        <div className="relative flex-1 w-full h-full bg-slate-950 flex items-center justify-center">
           {error ? (
-            <div className="p-6 text-center text-xs text-rose-400 bg-rose-950/20 max-w-[85%] rounded-2xl border border-rose-900/30 space-y-2">
-              <p className="font-bold">⚠️ เข้าถึงกล้องไม่สำเร็จ</p>
-              <p>{error}</p>
+            <div className="p-6 text-center text-xs text-rose-400 bg-rose-950/20 max-w-[85%] rounded-2xl border border-rose-900/30 space-y-3 z-10">
+              <p className="font-bold text-sm">⚠️ การเชื่อมต่อกล้องขัดข้อง</p>
+              <p className="leading-relaxed">{error}</p>
+              <Button onClick={startCamera} type="button" className="bg-sky-600 hover:bg-sky-700 font-bold px-6 py-2 rounded-xl mt-2 w-full">
+                เชื่อมต่อกล้องอีกครั้ง
+              </Button>
             </div>
           ) : (
-            <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              className="absolute inset-0 h-full w-full object-cover" 
+            />
+          )}
+
+          {/* Grid overlay lines to guide user to center the device/food */}
+          {!error && stream && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              {/* Guides */}
+              <div className="w-[75%] aspect-[4/3] border-2 border-white/20 rounded-2xl relative">
+                <div className="absolute inset-0 border border-dashed border-sky-400/30 rounded-2xl animate-pulse" />
+                <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10" />
+                <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-white/10" />
+                <p className="absolute bottom-3 left-0 right-0 text-center text-[9px] font-bold text-white/50 tracking-wider">จัดวางอุปกรณ์/อาหารให้อยู่ในกรอบ</p>
+              </div>
+            </div>
           )}
         </div>
 
-        <div className="mt-6 flex w-full justify-center">
+        {/* Bottom Shutter Panel - Immersive native camera style */}
+        <div className="bg-gradient-to-t from-black/90 to-black/30 p-6 flex flex-col items-center justify-center backdrop-blur-[2px] z-10">
           {!error && stream ? (
-            <button
-              onClick={handleCapture}
-              type="button"
-              className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-sky-600 transition-all hover:bg-sky-500 active:scale-90 shadow-lg shadow-sky-950/50"
-              title="กดเพื่อบันทึกรูปภาพ"
-            >
-              <div className="h-10 w-10 rounded-full bg-white" />
-            </button>
+            <div className="flex items-center justify-center w-full">
+              <button
+                onClick={handleCapture}
+                type="button"
+                className="group relative flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-transparent transition-all active:scale-90"
+                title="กดเพื่อบันทึกรูปภาพ"
+              >
+                {/* Inner white circle with sky glow */}
+                <div className="h-14 w-14 rounded-full bg-white transition-all group-hover:scale-95 group-active:bg-sky-100 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full border border-sky-400 bg-sky-50 opacity-20 group-hover:opacity-40" />
+                </div>
+              </button>
+            </div>
           ) : (
-            <Button onClick={startCamera} type="button" className="bg-sky-600 hover:bg-sky-700 font-bold px-6 py-2 rounded-xl">
-              ลองเชื่อมต่อกล้องอีกครั้ง
-            </Button>
+            <p className="text-[11px] text-slate-400">สิทธิ์การใช้งานกล้องถูกปิดอยู่</p>
           )}
         </div>
       </div>
