@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bot, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,14 +35,19 @@ export function MockChat({
     try {
       const answer = await askAI(
         [
-          "ตอบเป็นภาษาไทยอย่างกระชับและเข้าอกเข้าใจ เหมาะกับต้นแบบระบบสุขภาพ",
-          "คำแนะนำการตอบ: ตอบคำถามโดยตรงทันที ไม่ต้องกล่าวยินดีต้อนรับหรือสวัสดีทักทายซ้ำซาก (เช่น ห้ามทักทายด้วย 'สวัสดีครับ คุณ...' หรือเปิดด้วยประโยคพูดคุยทั่วไปในทุกข้อความ)",
-          "การจัดรูปประโยค: ใช้การขึ้นบรรทัดใหม่ (Newlines) แบ่งย่อหน้าสั้นๆ หรือใช้หัวข้อย่อย (Bullet points) เป็นข้อๆ เพื่อให้อ่านง่าย สบายตา ห้ามเขียนเป็นเรียงความยาวเรียบๆ เด็ดขาด",
+          "=== System Instructions ===",
+          "คุณคือผู้ช่วย AI ส่วนตัวด้านสุขภาพ ตอบคำถามของผู้ใช้โดยตรงอย่างสุภาพและเข้าอกเข้าใจ",
+          "หากผู้ใช้ส่งข้อความทักทายทั่วไป (เช่น สวัสดี, หวัดดี, ทักทาย, hello, hi) ให้ตอบทักทายกลับสั้นๆ อย่างเป็นมิตรและถามว่ามีอะไรให้ช่วยเหลือในวันนี้ โดยยังไม่ต้องแสดงการประเมินวิเคราะห์ค่าสุขภาพทั้งหมด ยกเว้นว่าผู้ใช้จะถามหาหรือเจาะจงเรื่องเหล่านั้นโดยตรง",
+          "รูปแบบการตอบ: กระชับ มีการขึ้นบรรทัดใหม่ (Newlines) แบ่งย่อหน้าสั้นๆ หรือใช้หัวข้อย่อย (Bullet points) เพื่อให้อ่านง่าย สบายตา ห้ามเขียนเป็นเรียงความยาวเรียบๆ เด็ดขาด",
           mode === "patient"
-            ? "บทบาท: ผู้ช่วย AI สำหรับผู้ป่วย อ้างอิง diagnosis, medication, care plan, blood pressure, blood sugar, exercise, diet, appointments"
-            : "บทบาท: ผู้ช่วย AI สำหรับผู้ดูแล อ้างอิง diagnosis, care plan, medication, measurements, doctor notes, burnout support",
-          context ? `บริบทผู้ใช้: ${context}` : "",
-          `คำถาม: ${userQuestion}`
+            ? "บทบาท: ผู้ช่วยดูแลสุขภาพผู้ป่วย (อ้างอิง diagnosis, medication, care plan, blood pressure, blood sugar, exercise, diet, appointments)"
+            : "บทบาท: ผู้ช่วยส่วนตัวของผู้ดูแลคนไข้ (อ้างอิง diagnosis, care plan, medication, measurements, doctor notes, burnout support)",
+          "",
+          "=== User Profile & Vitals Context ===",
+          context || "ไม่มีข้อมูลบริบทเพิ่มเติม",
+          "",
+          "=== User Message ===",
+          userQuestion
         ]
           .filter(Boolean)
           .join("\n")
