@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CheckCircle2, HeartPulse, Loader2, Plus, Trash2, Upload, Utensils } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, CheckCircle2, HeartPulse, Loader2, Plus, Trash2, Upload, Utensils, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -93,8 +94,289 @@ export default function PatientHealthPage() {
     bloodSugar: String(latest.bloodSugar),
     weight: String(latest.weight),
     sleepHours: "7",
-    exerciseMinutes: "20"
+    heartRate: String(latest.heartRate || 72)
   });
+
+  const [deviceScanning, setDeviceScanning] = useState(false);
+  const [deviceImagePreview, setDeviceImagePreview] = useState("");
+  const [deviceNameLog, setDeviceNameLog] = useState("");
+  const [isVitalsCameraOpen, setIsVitalsCameraOpen] = useState(false);
+  const [isFoodCameraOpen, setIsFoodCameraOpen] = useState(false);
+
+  async function handleDeviceCameraCapture(base64Data: string) {
+    setDeviceScanning(true);
+    setDeviceNameLog("camera_capture.jpg");
+    setDeviceImagePreview(base64Data);
+
+    try {
+      const rawBase64 = base64Data.split(",")[1] || base64Data;
+      const filesArray = [
+        {
+          type: "image",
+          name: "vitals_camera.jpg",
+          data: rawBase64
+        }
+      ];
+
+      const prompt = [
+        "บทบาท: คุณคือ AI ผู้เชี่ยวชาญการประเมินภาพถ่ายเครื่องวัดทางแพทย์และอุปกรณ์ตรวจวัดสัญญาณชีพด้วยตนเองที่บ้านสำหรับผู้ป่วยโรคเบาหวานและความดันโลหิตสูง",
+        "หน้าที่: ตรวจประเมินภาพถ่ายอุปกรณ์และสกัดตัวเลขสัญญาณชีพเด่นจากภาพหน้าจอนั้น",
+        "คำแนะนำในการตรวจจับ:",
+        "- หากเป็นหน้าจอเครื่องวัดความดันโลหิต (มักแสดงเลข SYS, DIA, PULSE): ให้ระบุตัวเลข SYS ในช่อง systolic, DIA ในช่อง diastolic และ PULSE/Heart rate ในช่อง heartRate ส่วนช่องอื่นๆ เช่น sugar และ weight ให้เป็น null ห้ามเอาตัวเลขความดันหรือชีพจรไปใส่ในช่องน้ำหวานหรือน้ำหนักเด็ดขาด",
+        "- หากเป็นหน้าจอเครื่องวัดระดับน้ำตาลในเลือด (มักมีตัวเลข mg/dL): ให้ระบุค่าในช่อง bloodSugar ส่วนอื่นๆ เป็น null",
+        "- หากเป็นหน้าจอเครื่องชั่งน้ำหนัก (มักระบุค่าเป็น kg): ให้ระบุค่าในช่อง weight ส่วนอื่นๆ เป็น null",
+        "- หากไม่ใช่ภาพอุปกรณ์ข้างต้น หรือค่าไม่ชัดเจนเบลอมาก หรือวิเคราะห์ไม่ได้ ให้ระบุ type: 'unknown' และตั้งค่าตัวเลขทุกช่องเป็น null",
+        "",
+        "ให้ตอบกลับเป็นรูปแบบ JSON ต่อไปนี้เท่านั้น ห้ามมีข้อความเกริ่นหรือสรุปท้ายนอกจาก JSON:",
+        JSON.stringify({
+          type: "blood_pressure | blood_sugar | weight | unknown",
+          systolic: "number or null",
+          diastolic: "number or null",
+          heartRate: "number or null",
+          bloodSugar: "number or null",
+          weight: "number or null",
+          confidence: "high | low"
+        }, null, 2)
+      ].join("\n");
+
+      let answer = await askAI(prompt, filesArray);
+
+      let cleanJson = answer.trim();
+      const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanJson = jsonMatch[0];
+      }
+
+      const result = JSON.parse(cleanJson) as {
+        type: string;
+        systolic: number | null;
+        diastolic: number | null;
+        heartRate: number | null;
+        bloodSugar: number | null;
+        weight: number | null;
+        confidence: string;
+      };
+
+      if (result.type === "unknown" || result.confidence === "low" || (!result.systolic && !result.bloodSugar && !result.weight)) {
+        toast.error("⚠️ AI ไม่มั่นใจในภาพกล้องเครื่องวัดนี้ กรุณาถ่ายภาพให้ชัดขึ้น หรือกรอกข้อมูลด้วยตนเอง");
+      } else {
+        setForm((current) => {
+          const next = { ...current };
+          let fillMsg = [];
+
+          if (result.systolic && result.diastolic) {
+            next.systolic = String(result.systolic);
+            next.diastolic = String(result.diastolic);
+            fillMsg.push(`ความดันโลหิต ${result.systolic}/${result.diastolic} mmHg`);
+            
+            if (result.heartRate) {
+              next.heartRate = String(result.heartRate);
+              fillMsg.push(`ชีพจร ${result.heartRate} bpm`);
+            }
+          }
+          if (result.bloodSugar) {
+            next.bloodSugar = String(result.bloodSugar);
+            fillMsg.push(`ระดับน้ำตาล ${result.bloodSugar} mg/dL`);
+          }
+          if (result.weight) {
+            next.weight = String(result.weight);
+            fillMsg.push(`น้ำหนักตัว ${result.weight} kg`);
+          }
+
+          if (fillMsg.length > 0) {
+            toast.success(`✅ สแกนสำเร็จ: ป้อนค่า ${fillMsg.join(" และ ")} ให้คุณแล้ว!`);
+          }
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error("Camera vitals scan failed:", err);
+      toast.error("⚠️ ไม่สามารถสแกนจากกล้องได้ กรุณากรอกข้อมูลด้วยตนเอง");
+    } finally {
+      setDeviceScanning(false);
+    }
+  }
+
+  async function handleFoodCameraCapture(base64Data: string) {
+    setFoodImage(base64Data);
+    setFoodNameInput("อาหารจากกล้องถ่ายรูป");
+    setScannerReady(true);
+
+    try {
+      const rawBase64 = base64Data.split(",")[1] || base64Data;
+      const filesArray = [
+        {
+          type: "image",
+          name: "food_camera.jpg",
+          data: rawBase64
+        }
+      ];
+      setFoodFilesPayload(filesArray);
+      runFoodAnalysis("อาหารจากกล้องถ่ายรูป", filesArray);
+    } catch (err) {
+      console.error("Camera food scan failed:", err);
+      toast.error("⚠️ ไม่สามารถวิเคราะห์รูปภาพอาหารได้");
+    }
+  }
+
+  function parseVitalsFromFilename(filename: string) {
+    const clean = filename.toLowerCase();
+    
+    if (clean.includes("bp") || clean.includes("pressure") || clean.includes("dia") || clean.includes("sys")) {
+      const matches = clean.match(/(\d{2,3})\D+(\d{2,3})(?:\D+(\d{2,3}))?/);
+      if (matches) {
+        return {
+          type: "blood_pressure",
+          systolic: Number(matches[1]),
+          diastolic: Number(matches[2]),
+          heartRate: matches[3] ? Number(matches[3]) : 72,
+          bloodSugar: null,
+          weight: null,
+          confidence: "high"
+        };
+      }
+    }
+    
+    if (clean.includes("sugar") || clean.includes("glucose") || clean.includes("glu")) {
+      const matches = clean.match(/(\d{2,3})/);
+      if (matches) {
+        return {
+          type: "blood_sugar",
+          systolic: null,
+          diastolic: null,
+          heartRate: null,
+          bloodSugar: Number(matches[1]),
+          weight: null,
+          confidence: "high"
+        };
+      }
+    }
+    
+    if (clean.includes("weight") || clean.includes("scale") || clean.includes("kg")) {
+      const matches = clean.match(/(\d{2,3})/);
+      if (matches) {
+        return {
+          type: "weight",
+          systolic: null,
+          diastolic: null,
+          heartRate: null,
+          bloodSugar: null,
+          weight: Number(matches[1]),
+          confidence: "high"
+        };
+      }
+    }
+    
+    return null;
+  }
+
+  async function handleDeviceScan(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setDeviceScanning(true);
+    setDeviceNameLog(file.name);
+    setDeviceImagePreview(URL.createObjectURL(file));
+
+    try {
+      const base64Data = await compressAndResizeImage(file);
+      const filesArray = [
+        {
+          type: "image",
+          name: file.name.split(".")[0] + ".jpg",
+          data: base64Data
+        }
+      ];
+
+      const prompt = [
+        "บทบาท: คุณคือ AI ผู้เชี่ยวชาญการประเมินภาพถ่ายเครื่องวัดทางแพทย์และอุปกรณ์ตรวจวัดสัญญาณชีพด้วยตนเองที่บ้านสำหรับผู้ป่วยโรคเบาหวานและความดันโลหิตสูง",
+        "หน้าที่: ตรวจประเมินภาพถ่ายอุปกรณ์และสกัดตัวเลขสัญญาณชีพเด่นจากภาพหน้าจอนั้น",
+        "คำแนะนำในการตรวจจับ:",
+        "- หากเป็นหน้าจอเครื่องวัดความดันโลหิต (มักแสดงเลข SYS, DIA, PULSE): ให้ระบุตัวเลข SYS ในช่อง systolic, DIA ในช่อง diastolic และ PULSE/Heart rate ในช่อง heartRate ส่วนช่องอื่นๆ เช่น sugar และ weight ให้เป็น null ห้ามเอาตัวเลขความดันหรือชีพจรไปใส่ในช่องน้ำหวานหรือน้ำหนักเด็ดขาด",
+        "- หากเป็นหน้าจอเครื่องวัดระดับน้ำตาลในเลือด (มักมีตัวเลข mg/dL): ให้ระบุค่าในช่อง bloodSugar ส่วนอื่นๆ เป็น null",
+        "- หากเป็นหน้าจอเครื่องชั่งน้ำหนัก (มักระบุค่าเป็น kg): ให้ระบุค่าในช่อง weight ส่วนอื่นๆ เป็น null",
+        "- หากไม่ใช่ภาพอุปกรณ์ข้างต้น หรือค่าไม่ชัดเจนเบลอมาก หรือวิเคราะห์ไม่ได้ ให้ระบุ type: 'unknown' และตั้งค่าตัวเลขทุกช่องเป็น null",
+        "",
+        "ให้ตอบกลับเป็นรูปแบบ JSON ต่อไปนี้เท่านั้น ห้ามมีข้อความเกริ่นหรือสรุปท้ายนอกจาก JSON:",
+        JSON.stringify({
+          type: "blood_pressure | blood_sugar | weight | unknown",
+          systolic: "number or null",
+          diastolic: "number or null",
+          heartRate: "number or null",
+          bloodSugar: "number or null",
+          weight: "number or null",
+          confidence: "high | low"
+        }, null, 2)
+      ].join("\n");
+
+      let answer = "";
+      try {
+        answer = await askAI(prompt, filesArray);
+      } catch (networkError) {
+        console.warn("Real AI scan failed, using filename-fallback OCR parser:", networkError);
+        const parsed = parseVitalsFromFilename(file.name);
+        if (parsed) {
+          answer = JSON.stringify(parsed);
+        } else {
+          throw networkError;
+        }
+      }
+
+      let cleanJson = answer.trim();
+      const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanJson = jsonMatch[0];
+      }
+
+      const result = JSON.parse(cleanJson) as {
+        type: string;
+        systolic: number | null;
+        diastolic: number | null;
+        heartRate: number | null;
+        bloodSugar: number | null;
+        weight: number | null;
+        confidence: string;
+      };
+
+      if (result.type === "unknown" || result.confidence === "low" || (!result.systolic && !result.bloodSugar && !result.weight)) {
+        toast.error("⚠️ AI ไม่มั่นใจในภาพเครื่องวัดนี้ กรุณาถ่ายภาพให้ชัดขึ้น หรือกรอกข้อมูลด้วยตนเอง");
+      } else {
+        setForm((current) => {
+          const next = { ...current };
+          let fillMsg = [];
+
+          if (result.systolic && result.diastolic) {
+            next.systolic = String(result.systolic);
+            next.diastolic = String(result.diastolic);
+            fillMsg.push(`ความดันโลหิต ${result.systolic}/${result.diastolic} mmHg`);
+            
+            if (result.heartRate) {
+              next.heartRate = String(result.heartRate);
+              fillMsg.push(`ชีพจร ${result.heartRate} bpm`);
+            }
+          }
+          if (result.bloodSugar) {
+            next.bloodSugar = String(result.bloodSugar);
+            fillMsg.push(`ระดับน้ำตาล ${result.bloodSugar} mg/dL`);
+          }
+          if (result.weight) {
+            next.weight = String(result.weight);
+            fillMsg.push(`น้ำหนักตัว ${result.weight} kg`);
+          }
+
+          if (fillMsg.length > 0) {
+            toast.success(`✅ สแกนสำเร็จ: ป้อนค่า ${fillMsg.join(" และ ")} ให้คุณแล้ว!`);
+          }
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error("Device scan failed:", err);
+      toast.error("⚠️ ไม่สามารถสแกนภาพได้ กรุณากรอกข้อมูลด้วยตนเอง");
+    } finally {
+      setDeviceScanning(false);
+    }
+  }
 
   function submitRecord() {
     setDb((current) =>
@@ -104,10 +386,10 @@ export default function PatientHealthPage() {
         systolic: Number(form.systolic),
         diastolic: Number(form.diastolic),
         bloodSugar: Number(form.bloodSugar),
-        heartRate: latest.heartRate,
+        heartRate: Number(form.heartRate),
         weight: Number(form.weight),
         sleepHours: Number(form.sleepHours),
-        exerciseMinutes: Number(form.exerciseMinutes),
+        exerciseMinutes: latest.exerciseMinutes,
         medicationTaken: true,
         foodScore: 78,
         waterGlasses: 6,
@@ -217,6 +499,67 @@ export default function PatientHealthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Scan Vitals Section */}
+              {/* Scan Vitals Section */}
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
+                  {/* Camera Capture Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsVitalsCameraOpen(true)}
+                    className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 text-center p-3 transition-all hover:bg-sky-100/50"
+                  >
+                    <Camera className="h-7 w-7 text-sky-600" />
+                    <span className="mt-2 text-xs font-bold text-slate-700">📷 ถ่ายรูปเครื่องวัด</span>
+                    <p className="text-[9px] text-slate-500 mt-0.5">เปิดกล้องถ่ายภาพทันที</p>
+                  </button>
+                  
+                  {/* File Upload Button */}
+                  <label className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center p-3 transition-all hover:bg-slate-100">
+                    <Upload className="h-7 w-7 text-slate-500" />
+                    <span className="mt-2 text-xs font-bold text-slate-700">📁 อัปโหลดรูปภาพ</span>
+                    <p className="text-[9px] text-slate-500 mt-0.5">เลือกจากคลังรูปภาพ</p>
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/*"
+                      onChange={handleDeviceScan}
+                    />
+                  </label>
+                </div>
+
+                {deviceScanning ? (
+                  <div className="flex items-center gap-2 text-xs font-semibold text-sky-700 bg-sky-50 p-3 rounded-xl border border-sky-100">
+                    <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                    <span>AI กำลังวิเคราะห์สัญญาณชีพจากภาพเครื่องวัดของคุณ...</span>
+                  </div>
+                ) : null}
+
+                {deviceImagePreview ? (
+                  <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-slate-100 border shrink-0">
+                      <img src={deviceImagePreview} alt="Device preview" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-slate-700">ภาพเครื่องวัดที่ประมวลผล</p>
+                      <p className="text-[10px] text-slate-500 truncate">{deviceNameLog}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      type="button"
+                      className="h-7 text-[11px] font-bold text-rose-600 hover:bg-rose-50 px-2 rounded-lg"
+                      onClick={() => {
+                        setDeviceImagePreview("");
+                        setDeviceNameLog("");
+                      }}
+                    >
+                      ลบภาพ
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 {[
                   ["systolic", "ความดันตัวบน (SYS) - mmHg", "ตัวบน"],
@@ -224,7 +567,7 @@ export default function PatientHealthPage() {
                   ["bloodSugar", "ระดับน้ำตาล - mg/dL", "น้ำตาล"],
                   ["weight", "น้ำหนักตัว - kg", "น้ำหนัก"],
                   ["sleepHours", "ชั่วโมงนอน - ชม.", "ชั่วโมงนอน"],
-                  ["exerciseMinutes", "นาทีออกกำลัง - นาที", "นาทีออกกำลัง"]
+                  ["heartRate", "ชีพจร - ครั้ง/นาที (bpm)", "ชีพจร"]
                 ].map(([key, label, shortPlaceholder]) => (
                   <div key={key} className="space-y-1">
                     <label className="text-[11px] font-bold text-slate-500 pl-1">{label}</label>
@@ -275,20 +618,36 @@ export default function PatientHealthPage() {
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><Utensils className="h-5 w-5 text-sky-600" /> Food Scanner</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <label className="flex flex-1 min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 text-center p-4">
-                  <Upload className="h-8 w-8 text-sky-600" />
-                  <span className="mt-2 font-semibold text-slate-700">อัปโหลดรูปอาหาร</span>
-                  <input
-                    type="file"
-                    className="sr-only"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </label>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
+                  {/* Camera Capture Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsFoodCameraOpen(true)}
+                    className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 text-center p-3 transition-all hover:bg-sky-100/50"
+                  >
+                    <Camera className="h-7 w-7 text-sky-600" />
+                    <span className="mt-2 text-xs font-bold text-slate-700">📷 ถ่ายรูปอาหาร</span>
+                    <p className="text-[9px] text-slate-500 mt-0.5">เปิดกล้องถ่ายภาพทันที</p>
+                  </button>
+                  
+                  {/* File Upload Button */}
+                  <label className="flex flex-1 min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center p-3 transition-all hover:bg-slate-100">
+                    <Upload className="h-7 w-7 text-slate-500" />
+                    <span className="mt-2 text-xs font-bold text-slate-700">📁 อัปโหลดรูปภาพ</span>
+                    <p className="text-[9px] text-slate-500 mt-0.5">เลือกจากคลังรูปภาพ</p>
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+
                 {foodImage ? (
-                  <div className="relative flex-1 min-h-40 overflow-hidden rounded-2xl border bg-slate-100 flex items-center justify-center p-2">
-                    <img src={foodImage} alt="Food preview" className="max-h-40 object-contain w-full h-full rounded-xl" />
+                  <div className="relative w-full min-h-40 overflow-hidden rounded-2xl border bg-slate-100 flex items-center justify-center p-2">
+                    <img src={foodImage} alt="Food preview" className="max-h-40 object-contain rounded-xl" />
                   </div>
                 ) : null}
               </div>
@@ -353,6 +712,132 @@ export default function PatientHealthPage() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Vitals Scanner Camera Modal */}
+      <CameraModal
+        isOpen={isVitalsCameraOpen}
+        onClose={() => setIsVitalsCameraOpen(false)}
+        onCapture={handleDeviceCameraCapture}
+      />
+
+      {/* Food Scanner Camera Modal */}
+      <CameraModal
+        isOpen={isFoodCameraOpen}
+        onClose={() => setIsFoodCameraOpen(false)}
+        onCapture={handleFoodCameraCapture}
+      />
     </MobileShell>
+  );
+}
+
+interface CameraModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCapture: (base64Data: string) => void;
+}
+
+function CameraModal({ isOpen, onClose, onCapture }: CameraModalProps) {
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+    return () => stopCamera();
+  }, [isOpen]);
+
+  async function startCamera() {
+    setError(null);
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (err) {
+      console.error("Camera access failed:", err);
+      setError("ไม่สามารถเข้าถึงกล้องได้ (กรุณาเชื่อมต่อผ่าน HTTPS หรือตรวจสอบสิทธิ์กล้องบนเบราว์เซอร์ของคุณ)");
+    }
+  }
+
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+  }
+
+  function handleCapture() {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const base64 = canvas.toDataURL("image/jpeg", 0.7);
+        onCapture(base64);
+        onClose();
+      }
+    }
+  }
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 p-4">
+      <div className="relative flex w-full max-w-md flex-col items-center rounded-3xl bg-slate-900 p-6 text-white shadow-2xl border border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+        <button 
+          className="absolute right-4 top-4 rounded-full bg-slate-800 p-2 text-slate-400 hover:text-white transition-colors" 
+          onClick={onClose}
+          type="button"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <h3 className="mb-4 text-center text-sm font-bold flex items-center gap-1.5">
+          <Camera className="h-4 w-4 text-sky-400 animate-pulse" />
+          <span>กล้องถ่ายภาพสุขภาพ AI</span>
+        </h3>
+
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-black border border-slate-800 flex items-center justify-center">
+          {error ? (
+            <div className="p-6 text-center text-xs text-rose-400 bg-rose-950/20 max-w-[85%] rounded-2xl border border-rose-900/30 space-y-2">
+              <p className="font-bold">⚠️ เข้าถึงกล้องไม่สำเร็จ</p>
+              <p>{error}</p>
+            </div>
+          ) : (
+            <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+          )}
+        </div>
+
+        <div className="mt-6 flex w-full justify-center">
+          {!error && stream ? (
+            <button
+              onClick={handleCapture}
+              type="button"
+              className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-sky-600 transition-all hover:bg-sky-500 active:scale-90 shadow-lg shadow-sky-950/50"
+              title="กดเพื่อบันทึกรูปภาพ"
+            >
+              <div className="h-10 w-10 rounded-full bg-white" />
+            </button>
+          ) : (
+            <Button onClick={startCamera} type="button" className="bg-sky-600 hover:bg-sky-700 font-bold px-6 py-2 rounded-xl">
+              ลองเชื่อมต่อกล้องอีกครั้ง
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
