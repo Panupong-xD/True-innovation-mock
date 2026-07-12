@@ -31,6 +31,18 @@ export async function POST(request: Request) {
     const result = await chatWithSwuAI(body.content, body.model, clientApiKey, clientUserId, body.files);
     return NextResponse.json(result);
   } catch (error) {
+    const errMessage = error instanceof Error ? error.message : "";
+    if (errMessage === "CLOUDFLARE_BLOCKED") {
+      const { generateFallbackResponse } = await import("@/lib/services/ai/swu");
+      const fallbackText = generateFallbackResponse(body.content || "");
+      return NextResponse.json({
+        configured: true,
+        model: body.model || "google/gemini-2.5-flash (Offline Fallback)",
+        text: fallbackText,
+        isFallback: true
+      });
+    }
+
     return NextResponse.json(
       {
         configured: true,
