@@ -6,9 +6,9 @@ export async function askAI(content: string, files?: Array<{ type: string; name:
   let model = "";
 
   if (typeof window !== "undefined") {
-    apiKey = localStorage.getItem("swu-api-key") || "";
-    userId = localStorage.getItem("swu-user-id") || "";
-    model = localStorage.getItem("swu-model") || "";
+    apiKey = localStorage.getItem("swu-api-key") || process.env.NEXT_PUBLIC_SWU_API_KEY || "";
+    userId = localStorage.getItem("swu-user-id") || process.env.NEXT_PUBLIC_SWU_USER_ID || "";
+    model = localStorage.getItem("swu-model") || process.env.NEXT_PUBLIC_SWU_MODEL || "";
   }
 
   // 1. Try calling the SWU AI API directly from the browser (bypasses TLS fingerprint block if on campus/VPN)
@@ -70,8 +70,8 @@ export async function askAI(content: string, files?: Array<{ type: string; name:
 }
 
 export async function getAvailableModels(apiKey?: string, userId?: string) {
-  const key = apiKey || (typeof window !== "undefined" ? localStorage.getItem("swu-api-key") || "" : "");
-  const uid = userId || (typeof window !== "undefined" ? localStorage.getItem("swu-user-id") || "" : "");
+  const key = apiKey || (typeof window !== "undefined" ? localStorage.getItem("swu-api-key") || process.env.NEXT_PUBLIC_SWU_API_KEY || "" : "");
+  const uid = userId || (typeof window !== "undefined" ? localStorage.getItem("swu-user-id") || process.env.NEXT_PUBLIC_SWU_USER_ID || "" : "");
 
   // 1. Try calling the SWU models endpoint directly from the browser
   if (key && uid) {
