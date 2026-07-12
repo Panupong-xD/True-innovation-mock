@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthCard
       title="ลืมรหัสผ่าน"
-      subtitle="ส่งคำแนะนำการรีเซ็ตรหัสผ่านผ่าน Firebase Authentication หรือจำลองสำหรับเดโม"
+      subtitle="ส่งคำแนะนำการรีเซ็ตรหัสผ่านหรือจำลองสำหรับเดโม"
       footer={<AuthLink href="/login">กลับไปเข้าสู่ระบบ</AuthLink>}
     >
       <form
@@ -37,10 +37,13 @@ export default function ForgotPasswordPage() {
         })}
       >
         <div>
-          <Input {...register("email")} placeholder="อีเมล" autoComplete="email" />
+          <Input {...register("email")} placeholder="อีเมล" autoComplete="email" className="rounded-2xl border-sky-100/70" />
           {errors.email ? <p className="mt-1 text-sm text-red-600">{errors.email.message}</p> : null}
         </div>
-        <Button className="w-full" size="lg" disabled={isSubmitting}>
+        <Button 
+          className="w-full rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-indigo-500/25 active:scale-[0.98] transition-all duration-300 font-bold border-none py-3 h-12 flex items-center justify-center gap-2" 
+          disabled={isSubmitting}
+        >
           <Mail className="h-5 w-5" />
           ส่งคำแนะนำ
         </Button>

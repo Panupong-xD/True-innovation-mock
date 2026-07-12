@@ -14,6 +14,8 @@ import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { addHealthRecord, deleteHealthRecord } from "@/lib/services/mock-store";
 import { askAI } from "@/lib/services/ai/client";
 import { formatThaiDate } from "@/lib/utils";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 function compressAndResizeImage(file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -60,7 +62,8 @@ function compressAndResizeImage(file: File, maxWidth = 800, maxHeight = 800, qua
 
 export default function PatientHealthPage() {
   const { db, setDb } = useMockStore();
-  const patient = db.patients[0];
+  const { user } = useAuth();
+  const patient = db.patients.find((item) => item.email === user?.email) || db.patients[0];
   const records = useMemo(
     () => db.healthRecords.filter((record) => record.patientId === patient.id),
     [db.healthRecords, patient.id]
@@ -216,20 +219,22 @@ export default function PatientHealthPage() {
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  ["systolic", "SYS"],
-                  ["diastolic", "DIA"],
-                  ["bloodSugar", "น้ำตาล"],
-                  ["weight", "น้ำหนัก"],
-                  ["sleepHours", "ชั่วโมงนอน"],
-                  ["exerciseMinutes", "นาทีออกกำลัง"]
-                ].map(([key, label]) => (
-                  <Input
-                    key={key}
-                    value={form[key as keyof typeof form]}
-                    onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))}
-                    placeholder={label}
-                    inputMode="decimal"
-                  />
+                  ["systolic", "ความดันตัวบน (SYS) - mmHg", "ตัวบน"],
+                  ["diastolic", "ความดันตัวล่าง (DIA) - mmHg", "ตัวล่าง"],
+                  ["bloodSugar", "ระดับน้ำตาล - mg/dL", "น้ำตาล"],
+                  ["weight", "น้ำหนักตัว - kg", "น้ำหนัก"],
+                  ["sleepHours", "ชั่วโมงนอน - ชม.", "ชั่วโมงนอน"],
+                  ["exerciseMinutes", "นาทีออกกำลัง - นาที", "นาทีออกกำลัง"]
+                ].map(([key, label, shortPlaceholder]) => (
+                  <div key={key} className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-500 pl-1">{label}</label>
+                    <Input
+                      value={form[key as keyof typeof form]}
+                      onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))}
+                      placeholder={shortPlaceholder}
+                      inputMode="decimal"
+                    />
+                  </div>
                 ))}
               </div>
               <Button className="w-full" onClick={submitRecord}>
@@ -263,9 +268,7 @@ export default function PatientHealthPage() {
         </TabsContent>
 
         <TabsContent value="charts" className="space-y-4">
-          <Card><CardHeader><CardTitle>Daily / Weekly / Monthly Trend</CardTitle></CardHeader><CardContent><MultiMetricChart records={records} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Blood Sugar</CardTitle></CardHeader><CardContent><TrendChart records={records} type="sugar" /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Medication / Exercise</CardTitle></CardHeader><CardContent><AdherenceChart records={records} /></CardContent></Card>
+          <MultiMetricChart records={records} />
         </TabsContent>
 
         <TabsContent value="food" className="space-y-4">
@@ -328,9 +331,9 @@ export default function PatientHealthPage() {
                             <p className="font-bold text-slate-900">{value}</p>
                           </div>
                         ))}
-                        <div className="col-span-2 rounded-2xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-800 whitespace-pre-wrap">
-                          <p className="font-bold mb-1">คำแนะนำโภชนาการสำหรับคุณ:</p>
-                          {foodAnalysis.recommendation}
+                        <div className="col-span-2 rounded-2xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
+                          <p className="font-bold mb-2">คำแนะนำโภชนาการสำหรับคุณ:</p>
+                          <MarkdownRenderer content={foodAnalysis.recommendation} />
                         </div>
                       </>
                     ) : null}

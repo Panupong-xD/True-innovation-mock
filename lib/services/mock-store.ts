@@ -22,7 +22,14 @@ export function loadMockStore(): MockDatabase {
     return mockDb;
   }
   try {
-    return JSON.parse(raw) as MockDatabase;
+    const parsed = JSON.parse(raw) as MockDatabase;
+    // Auto-migrate: reset if cached DB has patients without emails or old duplicate notifications
+    const needsReset = parsed.patients.some(p => !p.email) || parsed.notifications.some(n => n.id === "N-4" && n.title === "Early Warning");
+    if (needsReset) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mockDb));
+      return mockDb;
+    }
+    return parsed;
   } catch {
     const fresh = createMockDatabase();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
@@ -79,6 +86,40 @@ export function updateTaskStatus(db: MockDatabase, planId: string, taskId: strin
           }
         : plan
     )
+  };
+}
+
+export function proposeTaskStatus(db: MockDatabase, planId: string, taskId: string, proposedStatus: CareTaskStatus) {
+  toast.success("บันทึกกิจกรรมแล้ว (ส่งรอยืนยันจากผู้ดูแล)");
+  return {
+    ...db,
+    carePlans: db.carePlans.map((plan) =>
+      plan.id === planId
+        ? {
+            ...plan,
+            tasks: plan.tasks.map((task) => (task.id === taskId ? { ...task, pendingConfirm: proposedStatus } : task))
+          }
+        : plan
+    )
+  };
+}
+
+export function confirmTaskStatus(db: MockDatabase, planId: string, taskId: string, confirm: boolean) {
+  toast.success(confirm ? "ยืนยันการปฏิบัติกิจกรรมแล้ว" : "ปฏิเสธกิจกรรมแล้ว");
+  return {
+    ...db,
+    carePlans: db.carePlans.map((plan) => {
+      return {
+        ...plan,
+        tasks: plan.tasks.map((task) => {
+          if (task.id === taskId) {
+            const nextStatus = confirm ? (task.pendingConfirm || "completed") : "pending";
+            return { ...task, status: nextStatus, pendingConfirm: undefined };
+          }
+          return task;
+        })
+      };
+    })
   };
 }
 

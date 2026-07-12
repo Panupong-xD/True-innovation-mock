@@ -1,21 +1,20 @@
 "use client";
 
-import { Check, CircleSlash, Pill, RotateCcw, Utensils, Dumbbell, CalendarCheck, Calendar } from "lucide-react";
+import { Check, CircleSlash, Pill, RotateCcw, Utensils, Dumbbell, CalendarCheck, Calendar, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
-import { proposeTaskStatus } from "@/lib/services/mock-store";
+import { confirmTaskStatus } from "@/lib/services/mock-store";
 import { formatThaiDate } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { useAuth } from "@/lib/hooks/use-auth";
 
-export default function PatientCarePlanPage() {
+export default function CaregiverCarePlanPage() {
   const { db, setDb } = useMockStore();
-  const { user } = useAuth();
   
-  const patient = db.patients.find((item) => item.email === user?.email) || db.patients[0];
+  const caregiver = db.caregivers[0];
+  const patient = db.patients.find((item) => item.id === caregiver.patientId)!;
   const plan = db.carePlans.find((item) => item.patientId === patient.id)!;
   const sections = [
     ["ยา", plan.medication, Pill],
@@ -27,14 +26,16 @@ export default function PatientCarePlanPage() {
   const dailyTasks = plan.tasks;
 
   return (
-    <MobileShell role="patient" title="แผนดูแล">
+    <MobileShell role="caregiver" title="แผนดูแลผู้ป่วย">
       <Card>
         <CardHeader className="flex-row items-start justify-between gap-3">
           <div>
-            <CardTitle>แผนดูแลที่แพทย์อนุมัติ</CardTitle>
+            <CardTitle>แผนรักษาของ {patient.name}</CardTitle>
             <p className="mt-1 text-sm text-slate-500">อัปเดต {formatThaiDate(plan.updatedAt)}</p>
           </div>
-          <Badge tone={plan.status === "published" ? "green" : "yellow"}>{plan.status === "published" ? "เผยแพร่แล้ว" : "ฉบับร่าง"}</Badge>
+          <Badge tone={plan.status === "published" ? "green" : "yellow"}>
+            {plan.status === "published" ? "เผยแพร่แล้ว" : "ฉบับร่าง"}
+          </Badge>
         </CardHeader>
         <CardContent>
           <div className="rounded-2xl bg-sky-50 p-4 text-sm leading-6 text-slate-700">
@@ -56,12 +57,12 @@ export default function PatientCarePlanPage() {
         ))}
       </div>
 
-      {/* Daily checklist log */}
+      {/* Daily checklist verification log */}
       <Card>
-        <CardHeader className="flex items-center justify-between flex-row">
+        <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-sky-600" />
-            Checklist กิจกรรมดูแลรักษาวันนี้
+            ตรวจสอบแผนงานคนไข้วันนี้
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -75,27 +76,34 @@ export default function PatientCarePlanPage() {
                 <div>
                   {task.pendingConfirm ? (
                     <Badge tone="yellow">
-                      🕒 รอยืนยัน ({task.pendingConfirm === "completed" ? "ทำแล้ว" : task.pendingConfirm === "skipped" ? "ข้าม" : "ทำไม่ได้"})
+                      🕒 รอคุณยืนยัน ({task.pendingConfirm === "completed" ? "ทำแล้ว" : task.pendingConfirm === "skipped" ? "ข้าม" : "ทำไม่ได้"})
                     </Badge>
                   ) : (
                     <Badge tone={task.status === "completed" ? "green" : task.status === "skipped" ? "orange" : task.status === "cannot" ? "red" : "blue"}>
-                      {task.status === "completed" ? "ทำแล้ว" : task.status === "skipped" ? "ข้ามกิจกรรม" : task.status === "cannot" ? "ทำไม่ได้" : "รอดำเนินการ"}
+                      {task.status === "completed" ? "ยืนยันแล้ว: ทำแล้ว" : task.status === "skipped" ? "ยืนยันแล้ว: ข้าม" : task.status === "cannot" ? "ยืนยันแล้ว: ทำไม่ได้" : "รอดำเนินการ"}
                     </Badge>
                   )}
                 </div>
               </div>
 
-              {/* Action checklist buttons */}
-              {!task.pendingConfirm && task.status === "pending" ? (
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  <Button size="sm" variant="success" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "completed"))}>
-                    <Check className="h-4 w-4" /> ทำแล้ว
+              {/* Verification Buttons */}
+              {task.pendingConfirm ? (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="success" 
+                    onClick={() => setDb((current) => confirmTaskStatus(current, plan.id, task.id, true))}
+                    className="flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="h-4 w-4" /> อนุมัติบันทึก
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "skipped"))}>
-                    <RotateCcw className="h-4 w-4" /> ข้าม
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "cannot"))}>
-                    <CircleSlash className="h-4 w-4" /> ทำไม่ได้
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    onClick={() => setDb((current) => confirmTaskStatus(current, plan.id, task.id, false))}
+                    className="flex items-center justify-center gap-1.5"
+                  >
+                    <X className="h-4 w-4" /> ปฏิเสธ
                   </Button>
                 </div>
               ) : null}

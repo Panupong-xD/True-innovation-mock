@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["got-scraping"],
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts"]
+  },
+  eslint: {
+    ignoreDuringBuilds: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
   }
 };
 

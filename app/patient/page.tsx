@@ -10,10 +10,12 @@ import { MetricCard, RiskBadge } from "@/components/health/metric-card";
 import { EarlyWarningCard } from "@/components/health/early-warning-card";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { formatThaiDate } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export default function PatientHomePage() {
   const { db } = useMockStore();
-  const patient = db.patients[0];
+  const { user } = useAuth();
+  const patient = db.patients.find((item) => item.email === user?.email) || db.patients[0];
   const records = db.healthRecords.filter((record) => record.patientId === patient.id);
   const latest = records[records.length - 1];
   const plan = db.carePlans.find((item) => item.patientId === patient.id)!;

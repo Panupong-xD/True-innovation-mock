@@ -104,7 +104,8 @@ function buildPatients(): Patient[] {
     doctorId: `D-${(index % 5) + 1}`,
     caregiverId: `C-${String(index + 1).padStart(4, "0")}`,
     hospital: seed.hospitals[index % seed.hospitals.length],
-    healthScore: clamp(91 - index * 2 + (index % 4) * 3, 48, 94)
+    healthScore: clamp(91 - index * 2 + (index % 4) * 3, 48, 94),
+    email: index === 0 ? "patient@gmail.com" : `patient${index + 1}@gmail.com`
   }));
 }
 
@@ -245,10 +246,30 @@ function buildNotifications(patients: Patient[]): NotificationItem[] {
       id: "N-4",
       userRole: "doctor",
       patientId: patient.id,
-      title: "Early Warning",
-      message: "ความดันและน้ำตาลมีแนวโน้มเพิ่มขึ้น",
-      type: "warning",
+      title: "การตรวจยืนยันกิจกรรมแผนดูแล",
+      message: "ผู้ดูแล (วารี สุขใจ) ยืนยันผลการปฏิบัติตามแผนทานยาและออกกำลังกายของ สมชาย สุขใจ แล้ว",
+      type: "care-plan",
+      date: isoDaysAgo(0),
+      read: false
+    },
+    {
+      id: "N-5",
+      userRole: "doctor",
+      patientId: patients[1].id,
+      title: "อนุมัติสิทธิ์เข้าถึงข้อมูลแล้ว",
+      message: "กานดา มีสุข ได้กดยืนยันอนุมัติสิทธิ์ให้ท่านเข้าถึงประวัติสุขภาพและการเฝ้าระวังเรียบร้อยแล้ว",
+      type: "hospital",
       date: isoDaysAgo(1),
+      read: true
+    },
+    {
+      id: "N-6",
+      userRole: "doctor",
+      patientId: patient.id,
+      title: "รายงานการส่งข้อมูลคนไข้",
+      message: "สมชาย สุขใจ ได้มีการอัปโหลดและซิงค์ข้อมูลตรวจวัดระดับความดันโลหิตและระดับน้ำตาลชุดใหม่",
+      type: "warning",
+      date: isoDaysAgo(2),
       read: true
     }
   ];

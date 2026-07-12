@@ -8,10 +8,12 @@ import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { updateConsentStatus } from "@/lib/services/mock-store";
 import { formatThaiDate } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export default function PatientNotificationsPage() {
   const { db, setDb } = useMockStore();
-  const patient = db.patients[0];
+  const { user } = useAuth();
+  const patient = db.patients.find((item) => item.email === user?.email) || db.patients[0];
   const notifications = db.notifications.filter((item) => item.userRole === "patient" && item.patientId === patient.id);
   const consents = db.consents.filter((item) => item.patientId === patient.id);
 

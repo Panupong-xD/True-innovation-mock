@@ -24,6 +24,7 @@ export interface Patient {
   caregiverId: string;
   hospital: string;
   healthScore: number;
+  email: string;
 }
 
 export interface Doctor {
@@ -69,6 +70,7 @@ export interface CareTask {
   time: string;
   detail: string;
   status: CareTaskStatus;
+  pendingConfirm?: CareTaskStatus;
 }
 
 export interface CarePlan {

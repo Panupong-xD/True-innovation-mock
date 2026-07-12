@@ -76,11 +76,12 @@ export async function getSwuModels(apiKey?: string, userId?: string) {
       : [];
 
     return { configured: true, models: modelNames };
-  } catch (error: any) {
-    if (error.response && error.response.statusCode === 403) {
+  } catch (error) {
+    const err = error as any;
+    if (err.response && err.response.statusCode === 403) {
       throw new Error("ติดระบบป้องกันของ Cloudflare (403) - กรุณาเชื่อมต่อ SWU VPN หรือตรวจสอบความถูกต้องของสิทธิ์การเข้าถึง");
     }
-    throw new Error(`SWU models request failed: ${error.message}`);
+    throw new Error(`SWU models request failed: ${err.message}`);
   }
 }
 
@@ -124,12 +125,13 @@ export async function chatWithSwuAI(
       model: targetModel,
       text: text || JSON.stringify(payload)
     };
-  } catch (error: any) {
-    if (error.response) {
-      if (error.response.statusCode === 403) {
-        const errorBody = error.response.body;
-        if (errorBody && typeof errorBody === "object" && errorBody.detail) {
-          throw new Error(`SWU AI: ${errorBody.detail}`);
+  } catch (error) {
+    const err = error as any;
+    if (err.response) {
+      if (err.response.statusCode === 403) {
+        const errorBody = err.response.body;
+        if (errorBody && typeof errorBody === "object" && (errorBody as any).detail) {
+          throw new Error(`SWU AI: ${(errorBody as any).detail}`);
         }
         throw new Error("ติดระบบป้องกันของ Cloudflare (403) - กรุณาเชื่อมต่อ SWU VPN หรือตรวจสอบสิทธิ์การเข้าถึง");
       }

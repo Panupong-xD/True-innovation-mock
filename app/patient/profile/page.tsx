@@ -6,12 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
-import { SwuSettings } from "@/components/ui/swu-settings";
 
 export default function PatientProfilePage() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { db } = useMockStore();
-  const patient = db.patients[0];
+  const patient = db.patients.find((item) => item.email === user?.email) || db.patients[0];
   const caregiver = db.caregivers.find((item) => item.patientId === patient.id);
   const consents = db.consents.filter((item) => item.patientId === patient.id);
 
@@ -56,9 +55,10 @@ export default function PatientProfilePage() {
         </CardContent>
       </Card>
 
-      <SwuSettings />
-
-      <Button variant="destructive" className="w-full" size="lg" onClick={logout}>
+      <Button 
+        className="w-full rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white shadow-lg hover:shadow-red-500/25 active:scale-[0.98] transition-all duration-300 font-bold border-none py-3 h-12 flex items-center justify-center gap-2" 
+        onClick={logout}
+      >
         <LogOut className="h-5 w-5" />
         ออกจากระบบ
       </Button>

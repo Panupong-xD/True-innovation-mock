@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ChatMessage } from "@/lib/types";
 import { askAI } from "@/lib/services/ai/client";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 
 export function MockChat({
   title,
@@ -87,7 +88,11 @@ export function MockChat({
                     : "max-w-[86%] rounded-2xl bg-sky-50 px-4 py-3 text-sm leading-6 text-slate-700"
                 }
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                {message.role === "user" ? (
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                  <MarkdownRenderer content={message.content} />
+                )}
                 <p className="mt-1 text-[11px] opacity-70">{message.time}</p>
               </div>
             </div>

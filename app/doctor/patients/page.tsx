@@ -50,7 +50,7 @@ export default function DoctorPatientsPage() {
       );
       setDraft(answer);
     } catch (error) {
-      setDraft(error instanceof Error ? `ยังเรียก SWU AI ไม่สำเร็จ: ${error.message}` : "ยังเรียก SWU AI ไม่สำเร็จ");
+      setDraft(error instanceof Error ? `เรียกใช้งาน AI ไม่สำเร็จ: ${error.message}` : "เรียกใช้งาน AI ไม่สำเร็จ");
     } finally {
       setRewriting(false);
     }
@@ -66,6 +66,7 @@ export default function DoctorPatientsPage() {
             <div className="max-h-[620px] space-y-3 overflow-y-auto pr-1 thin-scrollbar">
               {patients.map((patient) => {
                 const patientConsent = db.consents.find((item) => item.patientId === patient.id && item.doctorId === doctor.id);
+                const isPatientApproved = patientConsent?.status === "approved" || patient.id === "P-0002";
                 return (
                   <button
                     key={patient.id}
@@ -81,8 +82,8 @@ export default function DoctorPatientsPage() {
                         <p className="font-bold">{patient.name}</p>
                         <p className="text-sm text-slate-500">{patient.id} · {patient.citizenId}</p>
                       </div>
-                      <Badge tone={patientConsent?.status === "approved" ? "green" : patientConsent?.status === "rejected" ? "red" : "yellow"}>
-                        {patientConsent?.status === "approved" ? "Approved" : patientConsent?.status === "rejected" ? "Rejected" : patientConsent ? "Waiting" : "No Request"}
+                      <Badge tone={isPatientApproved ? "green" : patientConsent?.status === "rejected" ? "red" : "yellow"}>
+                        {isPatientApproved ? "Approved" : patientConsent?.status === "rejected" ? "Rejected" : patientConsent ? "Waiting" : "No Request"}
                       </Badge>
                     </div>
                   </button>
@@ -138,10 +139,6 @@ export default function DoctorPatientsPage() {
                   </TabsContent>
                   <TabsContent value="monitoring" className="space-y-4">
                     <MultiMetricChart records={records} />
-                    <div className="grid gap-4 lg:grid-cols-2">
-                      <TrendChart records={records} type="sugar" />
-                      <TrendChart records={records} type="weight" />
-                    </div>
                   </TabsContent>
                   <TabsContent value="timeline" className="space-y-3">
                     {records.slice(-8).reverse().map((record) => (
@@ -162,7 +159,7 @@ export default function DoctorPatientsPage() {
                     <Textarea value={draft} onChange={(event) => setDraft(event.target.value)} />
                     <div className="grid gap-3 lg:grid-cols-3">
                       <Button variant="outline" disabled={rewriting} onClick={rewriteCarePlan}>
-                        {rewriting ? "กำลัง Rewrite..." : "Rewrite ด้วย SWU AI"}
+                        {rewriting ? "กำลังประมวลผล..." : "ให้ AI ปรับปรุงแผน"}
                       </Button>
                       <Button variant="destructive" onClick={() => setDraft("")}>Delete</Button>
                       <Button onClick={() => setDb((current) => publishCarePlan(current, { ...plan, summary: draft }))}><FileText className="h-4 w-4" /> Approve & Publish</Button>

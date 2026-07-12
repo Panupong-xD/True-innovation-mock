@@ -106,5 +106,5 @@ export async function getAvailableModels(apiKey?: string, userId?: string) {
     throw new Error(errorBody.error || `Models request failed with status ${response.status}`);
   }
 
-  return (await response.json()) as { configured: boolean; models: string[] | Record<string, any> };
+  return (await response.json()) as { configured: boolean; models: string[] | Record<string, unknown> };
 }

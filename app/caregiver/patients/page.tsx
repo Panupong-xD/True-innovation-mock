@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileShell } from "@/components/layouts/mobile-shell";
 import { AdherenceChart, MultiMetricChart, TrendChart } from "@/components/health/charts";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
-import { updateRecordStatus } from "@/lib/services/mock-store";
+import { updateRecordStatus, confirmTaskStatus } from "@/lib/services/mock-store";
 import { formatThaiDate } from "@/lib/utils";
 
 export default function CaregiverPatientPage() {
@@ -17,6 +17,13 @@ export default function CaregiverPatientPage() {
   const patient = db.patients.find((item) => item.id === caregiver.patientId)!;
   const records = db.healthRecords.filter((item) => item.patientId === patient.id);
   const pending = records.filter((item) => item.confirmationStatus === "pending").slice(-6).reverse();
+  const pendingTasks = db.carePlans
+    .filter((p) => p.patientId === patient.id)
+    .flatMap((p) =>
+      p.tasks
+        .filter((t) => t.pendingConfirm)
+        .map((t) => ({ ...t, planId: p.id }))
+    );
 
   return (
     <MobileShell role="caregiver" title="ผู้ป่วย">
@@ -39,29 +46,62 @@ export default function CaregiverPatientPage() {
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
         </TabsList>
         <TabsContent value="monitoring" className="space-y-4">
-          <Card><CardHeader><CardTitle>Patient Health Summary</CardTitle></CardHeader><CardContent><MultiMetricChart records={records} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Sleep / Exercise / Food</CardTitle></CardHeader><CardContent><AdherenceChart records={records} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Weight Trend</CardTitle></CardHeader><CardContent><TrendChart records={records} type="weight" /></CardContent></Card>
+          <MultiMetricChart records={records} />
         </TabsContent>
-        <TabsContent value="confirm" className="space-y-3">
-          {pending.map((record) => (
-            <Card key={record.id}>
-              <CardContent className="space-y-3 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-bold">BP {record.systolic}/{record.diastolic} · น้ำตาล {record.bloodSugar}</p>
-                    <p className="mt-1 text-sm text-slate-500">{formatThaiDate(record.date)} · บันทึกโดยผู้ป่วย</p>
+        <TabsContent value="confirm" className="space-y-4">
+          {/* Health Records Section */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-slate-400 pl-1 uppercase tracking-wider">บันทึกระดับสัญญาณชีพค้างอนุมัติ ({pending.length})</h4>
+            {pending.length ? pending.map((record) => (
+              <Card key={record.id} className="border border-sky-50 shadow-sm">
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold text-slate-800">BP {record.systolic}/{record.diastolic} · น้ำตาล {record.bloodSugar}</p>
+                      <p className="mt-1 text-xs text-slate-500">{formatThaiDate(record.date)} · บันทึกโดยผู้ป่วย</p>
+                    </div>
+                    <Badge tone="yellow">รอยืนยัน</Badge>
                   </div>
-                  <Badge tone="yellow">Pending Confirmation</Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="success" onClick={() => setDb((current) => updateRecordStatus(current, record.id, "confirmed"))}><Check className="h-4 w-4" /> Confirmed</Button>
-                  <Button variant="outline" onClick={() => setDb((current) => updateRecordStatus(current, record.id, "rejected"))}><X className="h-4 w-4" /> Rejected</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          {!pending.length ? <Card><CardContent className="p-5 text-center text-sm text-slate-500">ไม่มีรายการรอยืนยัน</CardContent></Card> : null}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="success" size="sm" onClick={() => setDb((current) => updateRecordStatus(current, record.id, "confirmed"))}><Check className="h-4 w-4" /> ยืนยันผล</Button>
+                    <Button variant="outline" size="sm" onClick={() => setDb((current) => updateRecordStatus(current, record.id, "rejected"))}><X className="h-4 w-4" /> ปฏิเสธ</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )) : (
+              <div className="text-center py-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400">
+                ไม่มีข้อมูลสัญญาณชีพค้างอนุมัติ
+              </div>
+            )}
+          </div>
+
+          {/* Care Plan Checklist Section */}
+          <div className="space-y-2 pt-2">
+            <h4 className="text-xs font-bold text-slate-400 pl-1 uppercase tracking-wider">การปฏิบัติงานตามแผนค้างอนุมัติ ({pendingTasks.length})</h4>
+            {pendingTasks.length ? pendingTasks.map((task) => (
+              <Card key={task.id} className="border border-sky-50 shadow-sm">
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold text-slate-800">{task.title}</p>
+                      <p className="mt-1 text-xs text-slate-500">{task.time} · {task.detail}</p>
+                    </div>
+                    <Badge tone="yellow">
+                      รอยืนยัน ({task.pendingConfirm === "completed" ? "ทำแล้ว" : task.pendingConfirm === "skipped" ? "ข้าม" : "ทำไม่ได้"})
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="success" size="sm" onClick={() => setDb((current) => confirmTaskStatus(current, task.planId, task.id, true))}><Check className="h-4 w-4" /> อนุมัติ</Button>
+                    <Button variant="destructive" size="sm" onClick={() => setDb((current) => confirmTaskStatus(current, task.planId, task.id, false))}><X className="h-4 w-4" /> ปฏิเสธ</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )) : (
+              <div className="text-center py-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400">
+                ไม่มีกิจกรรมของคนไข้ค้างอนุมัติ
+              </div>
+            )}
+          </div>
         </TabsContent>
         <TabsContent value="timeline" className="space-y-3">
           {records.slice(-10).reverse().map((record) => (

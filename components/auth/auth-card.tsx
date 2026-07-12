@@ -40,7 +40,6 @@ export function AuthCard({
         <div className="mt-4 rounded-2xl bg-white/70 p-4 text-xs leading-6 text-slate-500 shadow-card">
           <p className="font-semibold text-slate-700">บัญชีตัวอย่าง</p>
           <p>patient@gmail.com / caregiver@gmail.com / doctor@gmail.com</p>
-          <p>ใส่รหัสผ่านใดก็ได้เมื่อยังไม่ได้ตั้งค่า Firebase</p>
         </div>
       </div>
     </main>

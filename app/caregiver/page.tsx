@@ -69,10 +69,12 @@ export default function CaregiverHomePage() {
 
       <EarlyWarningCard warning={warning} />
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button variant="secondary" asChild><Link href="/caregiver/alerts"><BellRing className="h-4 w-4" /> Alerts</Link></Button>
-        <Button variant="secondary" asChild><Link href="/caregiver/patients"><UsersRound className="h-4 w-4" /> Monitoring</Link></Button>
-      </div>
+      <Button variant="secondary" className="w-full rounded-2xl bg-white border border-sky-100 shadow-sm py-3.5 h-12 flex items-center justify-center gap-2 font-bold text-slate-700 hover:bg-sky-50/50" asChild>
+        <Link href="/caregiver/patients">
+          <UsersRound className="h-5 w-5 text-sky-600" />
+          ข้อมูลสุขภาพเชิงลึก (Monitoring)
+        </Link>
+      </Button>
     </MobileShell>
   );
 }

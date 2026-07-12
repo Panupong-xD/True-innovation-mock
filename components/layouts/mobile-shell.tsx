@@ -19,7 +19,7 @@ const navConfig = {
   caregiver: [
     { href: "/caregiver", label: "หน้าหลัก", icon: Home },
     { href: "/caregiver/patients", label: "ผู้ป่วย", icon: UsersRound },
-    { href: "/caregiver/alerts", label: "แจ้งเตือน", icon: Bell },
+    { href: "/caregiver/care-plan", label: "แผนดูแล", icon: ListChecks },
     { href: "/caregiver/ai", label: "ผู้ช่วย AI", icon: Bot },
     { href: "/caregiver/profile", label: "โปรไฟล์", icon: UserRound }
   ]
