@@ -25,6 +25,13 @@ export interface Patient {
   hospital: string;
   healthScore: number;
   email: string;
+  dob?: string;
+  weight?: number;
+  height?: number;
+  phone?: string;
+  occupation?: string;
+  address?: string;
+  pin?: string;
 }
 
 export interface Doctor {

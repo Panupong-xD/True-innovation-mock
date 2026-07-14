@@ -1,11 +1,12 @@
 "use client";
 
-import { BellRing, Bluetooth, Building2, Clock, LogOut, UserRound } from "lucide-react";
+import { BellRing, Bluetooth, Building2, Clock, LogOut, UserRound, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
+import { formatThaiDate } from "@/lib/utils";
 
 export default function PatientProfilePage() {
   const { logout, user } = useAuth();
@@ -46,6 +47,40 @@ export default function PatientProfilePage() {
           </CardContent>
         </Card>
       ))}
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-black flex items-center gap-1.5"><FileText className="h-4.5 w-4.5 text-sky-600" /> ข้อมูลประวัติคนไข้</CardTitle></CardHeader>
+        <CardContent className="space-y-2.5">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 text-xs">
+            <div>
+              <p className="font-bold text-slate-400">เลขประจำตัวประชาชน</p>
+              <p className="font-bold text-slate-700 mt-0.5">{patient.citizenId || "ไม่ระบุ"}</p>
+            </div>
+            <div>
+              <p className="font-bold text-slate-400">วัน/เดือน/ปีเกิด</p>
+              <p className="font-bold text-slate-700 mt-0.5">{patient.dob ? formatThaiDate(patient.dob) : "ไม่ระบุ"}</p>
+            </div>
+            <div>
+              <p className="font-bold text-slate-400">น้ำหนัก / ส่วนสูง</p>
+              <p className="font-bold text-slate-700 mt-0.5">{patient.weight ? `${patient.weight} กก. / ${patient.height} ซม.` : "ไม่ระบุ"}</p>
+            </div>
+            <div>
+              <p className="font-bold text-slate-400">เบอร์โทรศัพท์</p>
+              <p className="font-bold text-slate-700 mt-0.5">{patient.phone || "ไม่ระบุ"}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="font-bold text-slate-400">อาชีพ</p>
+              <p className="font-bold text-slate-700 mt-0.5">{patient.occupation || "ไม่ระบุ"}</p>
+            </div>
+          </div>
+          {patient.address && (
+            <div className="border-t border-slate-100 pt-2 text-xs mt-1">
+              <p className="font-bold text-slate-400">ที่อยู่ติดต่อ</p>
+              <p className="font-bold text-slate-700 mt-0.5 leading-relaxed">{patient.address}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle>ผู้ดูแลที่เชื่อมต่อ</CardTitle></CardHeader>
