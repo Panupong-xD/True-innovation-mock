@@ -11,6 +11,7 @@ import { EarlyWarningCard } from "@/components/health/early-warning-card";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { formatThaiDate } from "@/lib/utils";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { HospitalCampaignCarousel } from "@/components/health/hospital-carousel";
 
 export default function PatientHomePage() {
   const { db } = useMockStore();
@@ -20,7 +21,7 @@ export default function PatientHomePage() {
   const latest = records[records.length - 1];
   const plan = db.carePlans.find((item) => item.patientId === patient.id)!;
   const warning = db.earlyWarnings.find((item) => item.patientId === patient.id)!;
-  const notification = db.notifications.find((item) => item.userRole === "patient");
+  const notification = db.notifications.find((item) => item.userRole === "patient" && item.type !== "hospital");
   const completed = plan.tasks.filter((task) => task.status === "completed").length;
 
   return (
@@ -84,20 +85,7 @@ export default function PatientHomePage() {
 
       <EarlyWarningCard warning={warning} />
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Quick Actions</CardTitle>
-          <RiskBadge level={warning.level} />
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3">
-          <Button variant="secondary" asChild>
-            <Link href="/patient/health"><HeartPulse className="h-4 w-4" /> บันทึกค่า</Link>
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link href="/patient/health"><Utensils className="h-4 w-4" /> Food Scanner</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <HospitalCampaignCarousel />
 
       {notification ? (
         <Card>

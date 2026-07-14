@@ -24,7 +24,10 @@ export function loadMockStore(): MockDatabase {
   try {
     const parsed = JSON.parse(raw) as MockDatabase;
     // Auto-migrate: reset if cached DB has patients without emails or old duplicate notifications
-    const needsReset = parsed.patients.some(p => !p.email) || parsed.notifications.some(n => n.id === "N-4" && n.title === "Early Warning");
+    const needsReset = 
+      parsed.patients.some(p => !p.email) || 
+      parsed.notifications.some(n => n.id === "N-4" && n.title === "Early Warning") ||
+      parsed.notifications.some(n => n.id === "N-2");
     if (needsReset) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(mockDb));
       return mockDb;

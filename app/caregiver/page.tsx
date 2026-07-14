@@ -9,6 +9,7 @@ import { MobileShell } from "@/components/layouts/mobile-shell";
 import { MetricCard } from "@/components/health/metric-card";
 import { EarlyWarningCard } from "@/components/health/early-warning-card";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
+import { HospitalCampaignCarousel } from "@/components/health/hospital-carousel";
 
 export default function CaregiverHomePage() {
   const { db } = useMockStore();
@@ -69,12 +70,7 @@ export default function CaregiverHomePage() {
 
       <EarlyWarningCard warning={warning} />
 
-      <Button variant="secondary" className="w-full rounded-2xl bg-white border border-sky-100 shadow-sm py-3.5 h-12 flex items-center justify-center gap-2 font-bold text-slate-700 hover:bg-sky-50/50" asChild>
-        <Link href="/caregiver/patients">
-          <UsersRound className="h-5 w-5 text-sky-600" />
-          ข้อมูลสุขภาพเชิงลึก (Monitoring)
-        </Link>
-      </Button>
+      <HospitalCampaignCarousel />
     </MobileShell>
   );
 }

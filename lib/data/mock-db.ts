@@ -227,16 +227,6 @@ function buildNotifications(patients: Patient[]): NotificationItem[] {
       read: false
     },
     {
-      id: "N-2",
-      userRole: "patient",
-      patientId: patient.id,
-      title: "ถึงเวลารับประทานยา",
-      message: "Metformin 500 mg หลังอาหารเช้า",
-      type: "medication",
-      date: isoDaysAgo(0),
-      read: false
-    },
-    {
       id: "N-3",
       userRole: "caregiver",
       patientId: patient.id,
