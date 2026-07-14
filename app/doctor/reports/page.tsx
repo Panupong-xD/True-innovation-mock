@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileBarChart, Users, User, IdCard, Briefcase, HeartPulse, Pill, Calendar, Activity } from "lucide-react";
+import { FileBarChart, Users, User, IdCard, Briefcase, HeartPulse, Pill, Calendar, Activity, Dumbbell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DoctorShell } from "@/components/layouts/doctor-shell";
 import { DoctorChartsGrid } from "@/components/health/charts";
@@ -21,8 +21,9 @@ export default function DoctorReportsPage() {
   };
 
   const total = records.length;
-  const medCompliance = total ? Math.round((records.filter(r => r.medicationTaken).length / total) * 105) : 0; // scale slightly for mock realism or keep under 100
+  const medCompliance = total ? Math.round((records.filter(r => r.medicationTaken).length / total) * 105) : 0; // scale slightly for mock realism
   const bpCompliance = total ? Math.round((records.filter(r => r.systolic > 0).length / total) * 100) : 0;
+  const exerciseCompliance = total ? Math.round((records.filter(r => r.exerciseMinutes >= 20).length / total) * 100) : 0;
 
   // Calculate mock dates relative to base mock date (2026-07-11)
   const mockBaseDate = new Date("2026-07-11T08:00:00+07:00");
@@ -56,17 +57,17 @@ export default function DoctorReportsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
         {/* Patient Info Card */}
-        <Card className="border border-sky-50 shadow-sm rounded-3xl">
+        <Card className="border border-sky-50 shadow-sm rounded-3xl flex flex-col h-full justify-between">
           <CardHeader className="pb-3">
             <CardTitle className="text-slate-800 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
               <User className="h-4 w-4 text-sky-600" />
               ข้อมูลผู้ป่วยและรายละเอียดส่วนบุคคล
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="flex-1 flex flex-col justify-between">
+            <div className="grid grid-cols-2 gap-4 flex-1">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-sky-600 shrink-0" />
                 <div>
@@ -77,28 +78,38 @@ export default function DoctorReportsPage() {
               <div className="flex items-center gap-2">
                 <IdCard className="h-4 w-4 text-sky-600 shrink-0" />
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-450 uppercase">เลขประจำตัว (HN)</p>
+                  <p className="text-[10px] font-semibold text-slate-455 uppercase">เลขประจำตัว (HN)</p>
                   <p className="text-xs font-bold text-slate-850">HN-{currentPatient.id.replace("P-", "").padStart(6, "0")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-sky-600 shrink-0" />
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-450 uppercase">อายุ / เพศ</p>
+                  <p className="text-[10px] font-semibold text-slate-455 uppercase">อายุ / เพศ</p>
                   <p className="text-xs font-bold text-slate-850">{currentPatient.age} ปี ({currentPatient.gender})</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-sky-600 shrink-0" />
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-450 uppercase">อาชีพ</p>
+                  <p className="text-[10px] font-semibold text-slate-455 uppercase">อาชีพ</p>
                   <p className="text-xs font-bold text-slate-850">{currentPatient.occupation || "ไม่ระบุ"}</p>
+                </div>
+              </div>
+              <div className="col-span-2 pt-2.5 border-t border-slate-100 grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-semibold text-slate-455 uppercase">การแพ้ยา (Allergies)</p>
+                  <p className="text-xs font-bold text-rose-600 mt-0.5">{currentPatient.allergies.join(", ") || "ไม่มีประวัติแพ้ยา"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold text-slate-455 uppercase">ยาที่กินประจำ (Medications)</p>
+                  <p className="text-xs font-bold text-slate-700 mt-0.5 truncate" title={currentPatient.medications.join(", ")}>{currentPatient.medications.join(", ")}</p>
                 </div>
               </div>
               <div className="col-span-2 flex items-start gap-2 pt-3 border-t border-slate-100 mt-1">
                 <HeartPulse className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-450 uppercase">โรคประจำตัว (Diagnosis)</p>
+                  <p className="text-[10px] font-semibold text-slate-455 uppercase">โรคประจำตัว (Diagnosis)</p>
                   <p className="text-xs font-bold text-slate-800 bg-sky-50 px-2.5 py-1 rounded-xl mt-1 inline-block border border-sky-100/50">
                     {currentPatient.diagnosis.join(" · ")}
                   </p>
@@ -109,14 +120,14 @@ export default function DoctorReportsPage() {
         </Card>
 
         {/* Compliance Progress Card */}
-        <Card className="border border-sky-50 shadow-sm rounded-3xl">
+        <Card className="border border-sky-50 shadow-sm rounded-3xl flex flex-col h-full justify-between">
           <CardHeader className="pb-3">
             <CardTitle className="text-slate-800 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
               <Activity className="h-4 w-4 text-sky-600" />
               ความคืบหน้าการดูแลรักษาและการปฏิบัติตามแผน
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col justify-between h-[80%]">
+          <CardContent className="flex-1 flex flex-col justify-between">
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xs">
                 <span className="font-semibold text-slate-500">ระยะเวลาติดตามดูแลแล้ว:</span>
@@ -144,6 +155,17 @@ export default function DoctorReportsPage() {
                 </div>
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-rose-500 rounded-full" style={{ width: `${bpCompliance}%` }} />
+                </div>
+              </div>
+
+              {/* Exercise Compliance */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <span className="flex items-center gap-1.5"><Dumbbell className="h-3.5 w-3.5 text-teal-600" /> ความสม่ำเสมอการออกกำลังกาย</span>
+                  <span className="text-teal-700">{exerciseCompliance}%</span>
+                </div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-teal-500 rounded-full" style={{ width: `${exerciseCompliance}%` }} />
                 </div>
               </div>
             </div>
@@ -188,7 +210,7 @@ export default function DoctorReportsPage() {
       
       <div className="mt-6">
         <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 pl-1">
-          รายงานกราฟแนวโน้มสัญญาณชีพและข้อมูลกายภาพ (4 Columns × 2 Rows)
+          รายงานกราฟแนวโน้มสัญญาณชีพและข้อมูลกายภาพ
         </h3>
         <DoctorChartsGrid records={records} />
       </div>

@@ -10,7 +10,7 @@ import { UserRole } from "@/lib/types";
 
 const navConfig = {
   patient: [
-    { href: "/patient", label: "Home", icon: Home },
+    { href: "/patient", label: "หน้าหลัก", icon: Home },
     { href: "/patient/health", label: "สุขภาพ", icon: HeartPulse },
     { href: "/patient/care-plan", label: "แผนดูแล", icon: ListChecks },
     { href: "/patient/notifications", label: "แจ้งเตือน", icon: Bell },
