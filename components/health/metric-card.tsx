@@ -29,29 +29,29 @@ export function MetricCard({
   }[riskLevel || "green"];
 
   return (
-    <Card className="border border-slate-100 shadow-sm rounded-3xl overflow-hidden bg-white transition-all duration-300">
-      <CardContent className="flex items-center gap-3 p-3.5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-600">
-          <Icon className="h-5.5 w-5.5" />
+    <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-white transition-all duration-300">
+      <CardContent className="flex items-center gap-2.5 p-3">
+        <div className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+          <Icon className="h-4.5 w-4.5" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-1">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide truncate">{title}</p>
+            <p className="text-[10px] font-bold text-slate-450 uppercase tracking-wide truncate">{title}</p>
             {onInfoClick ? (
               <button
                 onClick={onInfoClick}
-                className="p-1 text-slate-400 hover:text-sky-600 rounded-full hover:bg-slate-100/50 transition-colors shrink-0"
+                className="p-0.5 text-slate-400 hover:text-sky-600 rounded-full hover:bg-slate-100/50 transition-colors shrink-0"
                 aria-label={`ข้อมูลแนะนำสำหรับ ${title}`}
               >
-                <Info className="h-3.5 w-3.5" />
+                <Info className="h-3 w-3" />
               </button>
             ) : null}
           </div>
           <div className="flex items-end gap-0.5 mt-0.5">
-            <span className={cn("text-xl font-extrabold leading-none tracking-tight", textValClass)}>{value}</span>
-            {unit ? <span className="text-[10px] font-bold text-slate-400 uppercase leading-none pb-0.5 pl-0.5">{unit}</span> : null}
+            <span className={cn("text-lg font-extrabold leading-none tracking-tight", textValClass)}>{value}</span>
+            {unit ? <span className="text-[9px] font-bold text-slate-400 uppercase leading-none pb-0.5 pl-0.5">{unit}</span> : null}
           </div>
-          {note ? <p className="mt-1 text-[10px] text-slate-400">{note}</p> : null}
+          {note ? <p className="mt-1 text-[9px] text-slate-400">{note}</p> : null}
         </div>
       </CardContent>
     </Card>

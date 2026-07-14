@@ -48,7 +48,7 @@ export default function PatientHomePage() {
     latest.heartRate > 100 || latest.heartRate < 60 ? "yellow" : "green";
 
   return (
-    <MobileShell role="patient" title="หน้าหลักผู้ป่วย">
+    <MobileShell role="patient" title="WELLYNC">
       <section className="rounded-[2rem] bg-gradient-to-br from-sky-500 to-teal-400 p-5 text-white shadow-soft">
         <p className="text-sm font-semibold opacity-90">สวัสดี {patient.name}</p>
         <div className="mt-4 flex items-end justify-between gap-4">

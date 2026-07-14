@@ -13,22 +13,22 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
 Card.displayName = "Card";
 
 const CardHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col gap-1.5 p-5 pb-2", className)} {...props} />
+  <div className={cn("flex flex-col gap-1 p-4 pb-1.5", className)} {...props} />
 );
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={cn("text-lg font-bold tracking-normal text-slate-900", className)} {...props} />
+  <h3 className={cn("text-[15px] font-bold tracking-tight text-slate-900", className)} {...props} />
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-sm leading-6 text-muted-foreground", className)} {...props} />
+  <p className={cn("text-[11px] leading-5 text-muted-foreground", className)} {...props} />
 );
 CardDescription.displayName = "CardDescription";
 
 const CardContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("p-5 pt-3", className)} {...props} />
+  <div className={cn("p-4 pt-1.5", className)} {...props} />
 );
 CardContent.displayName = "CardContent";
 

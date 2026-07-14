@@ -52,34 +52,40 @@ export function MobileShell({
   return (
     <Protected role={role}>
       <div className="mx-auto min-h-screen w-full max-w-3xl bg-gradient-to-b from-white/80 to-sky-50/80">
-        <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/88 px-5 py-4 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/88 px-5 py-3.5 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-sky-600">Wellync</p>
-              <h1 className="text-xl font-bold text-slate-950">{title}</h1>
+              {title === "WELLYNC" ? (
+                <h1 className="text-[20px] font-black text-sky-600 tracking-wider uppercase">WELLYNC</h1>
+              ) : (
+                <>
+                  <p className="text-[10px] font-black text-sky-600 uppercase tracking-widest">Wellync</p>
+                  <h1 className="text-[17px] font-extrabold text-slate-950 mt-0.5">{title}</h1>
+                </>
+              )}
             </div>
             
-            {/* Top-Right Notification/Alert Button */}
+            {/* Top-Right Notification/Alert Button (Bell icon for both Patient and Caregiver) */}
             {role === "patient" ? (
               <Link
                 href="/patient/notifications"
-                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
+                className="flex h-9.5 w-9.5 items-center justify-center rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
                 aria-label="การแจ้งเตือน"
               >
-                <HeartPulse className="h-5 w-5" />
+                <Bell className="h-4.5 w-4.5" />
                 {hasIndicator && (
-                  <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-rose-500 border border-white animate-bounce" />
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 border border-white animate-bounce" />
                 )}
               </Link>
             ) : (
               <Link
                 href="/caregiver/alerts"
-                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
+                className="flex h-9.5 w-9.5 items-center justify-center rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
                 aria-label="การแจ้งเตือนและการดูแลความเสี่ยง"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-4.5 w-4.5" />
                 {hasIndicator && (
-                  <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-rose-500 border border-white animate-pulse" />
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 border border-white animate-pulse" />
                 )}
               </Link>
             )}
@@ -90,12 +96,12 @@ export function MobileShell({
           initial={{ opacity: 0, y: 3 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.08 }}
-          className="space-y-5 px-4 py-5 pb-28"
+          className="space-y-4 px-5 py-4 pb-24"
         >
           {children}
         </motion.main>
 
-        <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2 border-t border-sky-100 bg-white/94 px-2 pb-2 pt-2 backdrop-blur-xl">
+        <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2 border-t border-sky-100 bg-white/94 px-4 pb-2.5 pt-1.5 backdrop-blur-xl">
           <div className="grid grid-cols-4 gap-1">
             {navItems.map((item) => {
               const active = pathname === item.href;
@@ -105,11 +111,11 @@ export function MobileShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-semibold text-slate-500 transition",
-                    active && "bg-sky-100 text-sky-700"
+                    "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] font-semibold text-slate-500 transition",
+                    active && "bg-sky-50 text-sky-700"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4.5 w-4.5" />
                   <span>{item.label}</span>
                 </Link>
               );

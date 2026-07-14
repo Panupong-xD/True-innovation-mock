@@ -145,9 +145,9 @@ export default function CaregiverHomePage() {
       {/* Treatment Target Section (Larger Post-it Carousel) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-[11px] font-extrabold text-slate-555 uppercase tracking-wider flex items-center gap-1.5">
+          <h3 className="text-[15px] font-extrabold text-slate-555 uppercase tracking-wider flex items-center gap-1.5">
             <Target className="h-4 w-4 text-sky-600 animate-pulse" />
-            เป้าหมายการดูแลสุขภาพของคนไข้ (ปัดซ้ายขวา)
+            เป้าหมายการดูแลสุขภาพของคนไข้
           </h3>
         </div>
 
