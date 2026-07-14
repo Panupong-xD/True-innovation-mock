@@ -376,10 +376,10 @@ export function DoctorChartsGrid({ records, className = "grid grid-cols-1 md:gri
                   {c.title}
                 </h4>
               </div>
-              <div className="h-28 sm:h-40 w-full">
+              <div className="h-[145px] sm:h-[195px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   {c.type === "bp" ? (
-                    <AreaChart data={data} margin={{ left: -26, right: 6, top: 10, bottom: 0 }}>
+                    <AreaChart data={data} margin={{ left: -22, right: -4, top: 10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="grid-sys" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.15} />
@@ -392,13 +392,13 @@ export function DoctorChartsGrid({ records, className = "grid grid-cols-1 md:gri
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                       <XAxis dataKey="date" tick={{ fontSize: 8, fill: "#64748b" }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 8, fill: "#64748b" }} tickLine={false} axisLine={false} domain={c.domain} ticks={c.ticks} />
+                      <YAxis tick={{ fontSize: 8, fill: "#64748b" }} tickLine={false} axisLine={false} domain={c.domain} ticks={c.ticks} width={25} />
                       <Tooltip isAnimationActive={false} contentStyle={{ borderRadius: 10, fontSize: 10, padding: 6 }} />
                       <Area type="monotone" dataKey="sys" name="SYS" stroke="#0ea5e9" strokeWidth={2} fill="url(#grid-sys)" />
                       <Area type="monotone" dataKey="dia" name="DIA" stroke="#3b82f6" strokeWidth={2} fill="url(#grid-dia)" />
                     </AreaChart>
                   ) : (
-                    <AreaChart data={data} margin={{ left: -26, right: 6, top: 10, bottom: 0 }}>
+                    <AreaChart data={data} margin={{ left: -22, right: -4, top: 10, bottom: 0 }}>
                       <defs>
                         <linearGradient id={`grid-${c.type}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={c.color} stopOpacity={0.15} />
@@ -407,7 +407,7 @@ export function DoctorChartsGrid({ records, className = "grid grid-cols-1 md:gri
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                       <XAxis dataKey="date" tick={{ fontSize: 8, fill: "#64748b" }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 8, fill: "#64748b" }} tickLine={false} axisLine={false} domain={c.domain as any} />
+                      <YAxis tick={{ fontSize: 8, fill: "#64748b" }} tickLine={false} axisLine={false} domain={c.domain as any} width={25} />
                       <Tooltip isAnimationActive={false} contentStyle={{ borderRadius: 10, fontSize: 10, padding: 6 }} />
                       <Area type="monotone" dataKey={c.key!} name={c.label} stroke={c.color} strokeWidth={2} fill={`url(#grid-${c.type})`} />
                     </AreaChart>
