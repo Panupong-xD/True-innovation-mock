@@ -1,12 +1,13 @@
 "use client";
 
-import { Activity, Check, HeartPulse, X } from "lucide-react";
+import Link from "next/link";
+import { Activity, Check, HeartPulse, X, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileShell } from "@/components/layouts/mobile-shell";
-import { AdherenceChart, MultiMetricChart, TrendChart, DoctorChartsGrid } from "@/components/health/charts";
+import { DoctorChartsGrid } from "@/components/health/charts";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { updateRecordStatus, confirmTaskStatus } from "@/lib/services/mock-store";
 import { formatThaiDate } from "@/lib/utils";
@@ -36,6 +37,25 @@ export default function CaregiverPatientPage() {
             <h2 className="text-xl font-bold">{patient.name}</h2>
             <p className="text-sm text-slate-500">{patient.diagnosis.join(" · ")}</p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Assistant Banner - moved here from caregiver bottom navbar */}
+      <Card className="bg-gradient-to-r from-sky-500 to-indigo-500 text-white border-none shadow-sm rounded-3xl overflow-hidden relative">
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/10 -translate-y-8 translate-x-8 blur-xl" />
+        <CardContent className="flex items-center justify-between p-4 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-md shrink-0">
+              <Bot className="h-5.5 w-5.5" />
+            </div>
+            <div>
+              <p className="text-xs font-black">วิเคราะห์อาการกับผู้ช่วย AI</p>
+              <p className="text-[10px] text-white/80 mt-0.5">ปรึกษาแพทย์ปัญญาประดิษฐ์จำลองเกี่ยวกับแผนการดูแลคนไข้</p>
+            </div>
+          </div>
+          <Button size="sm" variant="secondary" asChild className="rounded-xl font-bold text-sky-700 bg-white hover:bg-sky-50 shrink-0">
+            <Link href="/caregiver/ai">เริ่มสนทนา</Link>
+          </Button>
         </CardContent>
       </Card>
 

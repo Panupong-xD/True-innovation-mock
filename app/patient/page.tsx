@@ -95,7 +95,7 @@ export default function PatientHomePage() {
             title: "ระดับน้ำตาลในเลือด (Blood Sugar)",
             content: (
               <>
-                <p className="font-bold text-slate-800">เกณฑ์ค่าน้ำตาลในเลือดหลังอดอาหาร (mg/dL):</p>
+                <p className="font-bold text-slate-800">เกณฑ์ค่านั่งร้านน้ำตาล (mg/dL):</p>
                 <div className="grid grid-cols-1 gap-1.5 mt-2 text-xs">
                   <div className="p-2 bg-emerald-50 text-emerald-800 rounded-xl font-bold">ปกติ (ขณะอดอาหาร): 70 - 99 mg/dL</div>
                   <div className="p-2 bg-amber-50 text-amber-800 rounded-xl font-bold">เฝ้าระวัง (เสี่ยงเบาหวาน): 100 - 125 mg/dL</div>
@@ -151,35 +151,80 @@ export default function PatientHomePage() {
         />
       </div>
 
-      {/* Treatment Target Section */}
-      <Card className="border border-sky-100 shadow-sm bg-gradient-to-r from-sky-50 to-indigo-50/50 rounded-3xl">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-slate-800 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-            <Target className="h-4 w-4 text-sky-600" />
-            เป้าหมายการดูแลระดับน้ำตาลและความดันโลหิตของคุณ
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2.5">
-          <div className="bg-white p-3 rounded-2xl border border-sky-100/50 space-y-1">
-            <p className="text-xs font-bold text-slate-700">ค่าน้ำตาลเจาะจากปลายนิ้วตอนเช้า (ก่อนทานอาหาร)</p>
-            <p className="text-[11px] text-slate-500 leading-normal">
-              ควรดูแลให้อยู่ในช่วงระหว่าง <span className="font-bold text-sky-700">80 ถึง 130 mg/dL</span>
-            </p>
+      {/* Treatment Target Section (Larger Post-it Carousel) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-[15px] font-extrabold text-slate-555 uppercase tracking-wider flex items-center gap-1.5">
+            <Target className="h-4 w-4 text-sky-600 animate-pulse" />
+            เป้าหมายการดูแลสุขภาพของคุณ
+          </h3>
+        </div>
+
+        <div
+          className="flex overflow-x-auto gap-6 px-2 pb-5 pt-2 scroll-smooth snap-x snap-mandatory scrollbar-none"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {/* Post-it 1: Sugar */}
+          <div className="w-[300px] shrink-0 snap-start relative pt-3">
+            {/* Masking Tape */}
+            <div className="w-16 h-5 bg-white/40 backdrop-blur-[0.5px] border border-white/20 rotate-[-2deg] absolute top-1 left-1/2 -translate-x-1/2 shadow-[0_1px_2px_rgba(0,0,0,0.05)] z-10" />
+            
+            {/* Paper Note */}
+            <div className="rotate-[-1.5deg] bg-[#e0f2fe] p-5 pb-3.5 shadow-[3px_6px_14px_rgba(0,0,0,0.08)] rounded-[2px] flex flex-col justify-between h-[155px] text-slate-800 border-l-[3.5px] border-sky-300">
+              <div>
+                <span className="text-[10px] font-black text-sky-700 bg-sky-200/50 px-2.5 py-0.5 rounded uppercase tracking-wider">เป้าหมายน้ำตาล</span>
+                <p className="text-xs text-slate-700 mt-3 leading-relaxed font-semibold">
+                  ค่าน้ำตาลเจาะจากปลายนิ้วตอนเช้าก่อนทานอาหาร ควรคุมให้อยู่ในช่วง <span className="font-black text-sky-900 text-[13px]">80 ถึง 130 mg/dL</span>
+                </p>
+              </div>
+              <div className="text-[10px] font-bold text-sky-700/80 border-t border-sky-300/30 pt-2 flex justify-between">
+                <span>ค่าน้ำตาลสะสมเฉลี่ยในร่างกาย:</span>
+                <span className="font-extrabold text-sky-900">น้อยกว่า 7%</span>
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-2xl border border-sky-100/50 space-y-1">
-            <p className="text-xs font-bold text-slate-700">ค่าน้ำตาลสะสมเฉลี่ยในร่างกายระยะยาว</p>
-            <p className="text-[11px] text-slate-500 leading-normal">
-              ควรดูแลให้ <span className="font-bold text-sky-700">น้อยกว่า 7%</span>
-            </p>
+
+          {/* Post-it 2: BP */}
+          <div className="w-[300px] shrink-0 snap-start relative pt-3">
+            {/* Masking Tape */}
+            <div className="w-16 h-5 bg-white/40 backdrop-blur-[0.5px] border border-white/20 rotate-[3deg] absolute top-1 left-1/2 -translate-x-1/2 shadow-[0_1px_2px_rgba(0,0,0,0.05)] z-10" />
+            
+            {/* Paper Note */}
+            <div className="rotate-[1deg] bg-[#e0f2fe] p-5 pb-3.5 shadow-[3px_6px_14px_rgba(0,0,0,0.08)] rounded-[2px] flex flex-col justify-between h-[155px] text-slate-800 border-l-[3.5px] border-sky-300">
+              <div>
+                <span className="text-[10px] font-black text-sky-700 bg-sky-200/50 px-2.5 py-0.5 rounded uppercase tracking-wider">เป้าหมายความดัน</span>
+                <p className="text-xs text-slate-700 mt-3 leading-relaxed font-semibold">
+                  คุมความดันโลหิตให้อยู่ในเกณฑ์ที่ปลอดภัย <span className="font-black text-sky-900 text-[13px]">ต่ำกว่า 130/80 mmHg</span>
+                </p>
+              </div>
+              <div className="text-[10px] font-bold text-sky-700/80 border-t border-sky-300/30 pt-2 flex justify-between">
+                <span>เป้าหมายเพื่อป้องกัน:</span>
+                <span className="font-extrabold text-sky-900">โรคแทรกซ้อนหลอดเลือด</span>
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-2xl border border-sky-100/50 space-y-1">
-            <p className="text-xs font-bold text-slate-700">ค่าความดันโลหิต</p>
-            <p className="text-[11px] text-slate-500 leading-normal">
-              ควรดูแลให้ <span className="font-bold text-teal-700">ต่ำกว่า 130/80 mmHg</span> เพื่อความปลอดภัย
-            </p>
+
+          {/* Post-it 3: Exercise */}
+          <div className="w-[300px] shrink-0 snap-start relative pt-3">
+            {/* Masking Tape */}
+            <div className="w-16 h-5 bg-white/40 backdrop-blur-[0.5px] border border-white/20 rotate-[-1deg] absolute top-1 left-1/2 -translate-x-1/2 shadow-[0_1px_2px_rgba(0,0,0,0.05)] z-10" />
+            
+            {/* Paper Note */}
+            <div className="rotate-[-1deg] bg-[#e0f2fe] p-5 pb-3.5 shadow-[3px_6px_14px_rgba(0,0,0,0.08)] rounded-[2px] flex flex-col justify-between h-[155px] text-slate-850 border-l-[3.5px] border-sky-300">
+              <div>
+                <span className="text-[10px] font-black text-sky-700 bg-sky-200/50 px-2.5 py-0.5 rounded uppercase tracking-wider">เป้าหมายกิจกรรม</span>
+                <p className="text-xs text-slate-700 mt-3 leading-relaxed font-semibold">
+                  ออกกำลังกายเบาๆ เช่น เดินเร็วสะสมความเหนื่อยให้ได้ <span className="font-black text-sky-900 text-[13px]">150 นาทีต่อสัปดาห์</span>
+                </p>
+              </div>
+              <div className="text-[10px] font-bold text-sky-700/80 border-t border-sky-300/30 pt-2 flex justify-between">
+                <span>คำแนะนำแพทย์:</span>
+                <span className="font-extrabold text-sky-900">เฉลี่ยวันละ 30 นาที 5 วัน</span>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">

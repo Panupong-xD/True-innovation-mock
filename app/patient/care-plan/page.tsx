@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Check, CircleSlash, Pill, RotateCcw, Utensils, Dumbbell, CalendarCheck, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { proposeTaskStatus } from "@/lib/services/mock-store";
-import { formatThaiDate } from "@/lib/utils";
+import { formatThaiDate, cn } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useAuth } from "@/lib/hooks/use-auth";
 
@@ -25,9 +26,135 @@ export default function PatientCarePlanPage() {
   ] as const;
 
   const dailyTasks = plan.tasks;
+  const [selectedDate, setSelectedDate] = useState<number>(11); // default is July 11
+
+  // Dynamic historical tasks builder
+  const getTasksForDate = (date: number) => {
+    if (date === 11) {
+      return dailyTasks;
+    }
+    if (date < 11) {
+      // Past days: simulate completed/skipped activities
+      return dailyTasks.map((t, idx) => ({
+        ...t,
+        status: (date + idx) % 3 === 0 ? ("skipped" as const) : ("completed" as const),
+        pendingConfirm: undefined
+      }));
+    }
+    // Future days: pending tasks
+    return dailyTasks.map(t => ({
+      ...t,
+      status: "pending" as const,
+      pendingConfirm: undefined
+    }));
+  };
+
+  const currentTasks = getTasksForDate(selectedDate);
 
   return (
     <MobileShell role="patient" title="แผนดูแล">
+      {/* Interactive Calendar Widget */}
+      <Card className="border border-slate-100 shadow-sm rounded-3xl overflow-hidden bg-white">
+        <CardHeader className="pb-3 border-b border-slate-100">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-bold flex items-center gap-1.5 text-slate-800">
+              <CalendarCheck className="h-4.5 w-4.5 text-sky-600" />
+              ปฏิทินแผนการดูแลและการนัดหมาย
+            </CardTitle>
+            <span className="text-[11px] font-extrabold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              กรกฎาคม 2569
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          {/* Days of the week */}
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold text-slate-400 uppercase mb-2">
+            <span>อา.</span>
+            <span>จ.</span>
+            <span>อ.</span>
+            <span>พ.</span>
+            <span>พฤ.</span>
+            <span>ศ.</span>
+            <span>ส.</span>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {/* Start Offset for Wednesday (3 empty cells) */}
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={`offset-${idx}`} className="h-9 w-9" />
+            ))}
+
+            {/* Days in July (31 days) */}
+            {Array.from({ length: 31 }).map((_, idx) => {
+              const day = idx + 1;
+              const isToday = day === 11;
+              const isSelected = day === selectedDate;
+              const isAppt = day === 16;
+              const isPast = day < 11;
+
+              return (
+                <button
+                  key={`day-${day}`}
+                  onClick={() => setSelectedDate(day)}
+                  className={cn(
+                    "h-9 w-9 rounded-full flex flex-col items-center justify-center relative transition-all duration-200 text-xs font-bold",
+                    isSelected
+                      ? "bg-sky-600 text-white shadow-md shadow-sky-600/20"
+                      : isToday
+                      ? "border border-sky-500 text-sky-700 bg-sky-50/50"
+                      : isAppt
+                      ? "border border-rose-500 text-rose-700 bg-rose-50/50 animate-pulse"
+                      : "text-slate-700 hover:bg-slate-50"
+                  )}
+                >
+                  <span>{day}</span>
+                  {/* Indicators below date */}
+                  <div className="absolute bottom-0.5 flex gap-0.5 items-center justify-center">
+                    {isAppt ? (
+                      <span className="h-1 w-1 rounded-full bg-rose-500" title="วันหมอนัด" />
+                    ) : isPast ? (
+                      <span className="h-1 w-1 rounded-full bg-emerald-500" title="มีบันทึกกิจกรรม" />
+                    ) : null}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Appointment Information / Legend */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row justify-between gap-2.5 text-[10px] text-slate-500 font-medium">
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <span className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                ประวัติทำกิจกรรมแล้ว
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                วันนัดหมายติดตามผล
+              </span>
+            </div>
+            {selectedDate === 16 ? (
+              <span className="text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-md self-start sm:self-auto border border-rose-100">
+                📢 วันสำคัญ: วันหมอนัดติดตามอาการโรคเบาหวานและความดัน (09:30 น.)
+              </span>
+            ) : selectedDate === 11 ? (
+              <span className="text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                วันนี้: กรุณาทำกิจกรรมและประเมินผลตามแผน
+              </span>
+            ) : selectedDate < 11 ? (
+              <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                ประวัติการดูแลวันที่ {selectedDate} กรกฎาคม 2569
+              </span>
+            ) : (
+              <span className="text-slate-500 font-bold bg-slate-50 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                แผนกิจกรรมล่วงหน้าวันที่ {selectedDate} กรกฎาคม 2569
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex-row items-start justify-between gap-3">
           <div>
@@ -61,11 +188,11 @@ export default function PatientCarePlanPage() {
         <CardHeader className="flex items-center justify-between flex-row">
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-sky-600" />
-            Checklist กิจกรรมดูแลรักษาวันนี้
+            Checklist กิจกรรม{selectedDate === 11 ? "วันนี้" : `วันที่ ${selectedDate} ก.ค.`}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {dailyTasks.map((task) => (
+          {currentTasks.map((task) => (
             <div key={task.id} className="rounded-2xl border bg-white p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -86,7 +213,7 @@ export default function PatientCarePlanPage() {
               </div>
 
               {/* Action checklist buttons */}
-              {!task.pendingConfirm && task.status === "pending" ? (
+              {selectedDate === 11 && !task.pendingConfirm && task.status === "pending" ? (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   <Button size="sm" variant="success" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "completed"))}>
                     <Check className="h-4 w-4" /> ทำแล้ว
