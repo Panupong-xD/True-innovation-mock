@@ -23,7 +23,7 @@ export function AuthCard({
             <HeartPulse className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-sky-600">TRUE IDC Health Cloud</p>
+            <p className="text-xs font-semibold text-sky-600">Wellync</p>
             <h1 className="text-xl font-bold text-slate-950">True Health Connect</h1>
           </div>
         </div>

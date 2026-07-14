@@ -105,7 +105,10 @@ function buildPatients(): Patient[] {
     caregiverId: `C-${String(index + 1).padStart(4, "0")}`,
     hospital: seed.hospitals[index % seed.hospitals.length],
     healthScore: clamp(91 - index * 2 + (index % 4) * 3, 48, 94),
-    email: index === 0 ? "patient@gmail.com" : `patient${index + 1}@gmail.com`
+    email: index === 0 ? "patient@gmail.com" : `patient${index + 1}@gmail.com`,
+    height: 165 + (index % 5) * 4,
+    weight: 60 + (index % 6) * 3,
+    occupation: ["ข้าราชการ", "พนักงานบริษัท", "ค้าขาย", "รับจ้างทั่วไป", "เกษตรกร", "แม่บ้าน"][index % 6]
   }));
 }
 
@@ -145,6 +148,7 @@ function buildRecords(patients: Patient[]): HealthRecord[] {
         bloodSugar: Math.round(112 + (patientIndex % 7) * 8 + Math.max(0, rise * 2)),
         heartRate: Math.round(70 + (patientIndex % 5) * 3 + Math.sin(reverseDay) * 5),
         weight: Number((62 + patientIndex * 0.8 + reverseDay * (patientIndex % 6 === 0 ? 0.07 : 0.01)).toFixed(1)),
+        height: patient.height || (165 + (patientIndex % 5) * 4),
         sleepHours: Number((7.2 - (patientIndex % 5 === 0 ? reverseDay * 0.035 : 0) + Math.sin(reverseDay / 5) * 0.3).toFixed(1)),
         exerciseMinutes: Math.max(0, Math.round(34 - (patientIndex % 3) * 7 - (reverseDay % 6) * 2)),
         medicationTaken: !skipped,

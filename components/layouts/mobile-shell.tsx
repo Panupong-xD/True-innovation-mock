@@ -42,7 +42,7 @@ export function MobileShell({
         <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/88 px-5 py-4 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-sky-600">TRUE IDC Health Cloud</p>
+              <p className="text-xs font-semibold text-sky-600">Wellync</p>
               <h1 className="text-xl font-bold text-slate-950">{title}</h1>
             </div>
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">

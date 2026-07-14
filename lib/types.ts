@@ -60,6 +60,7 @@ export interface HealthRecord {
   bloodSugar: number;
   heartRate: number;
   weight: number;
+  height: number;
   sleepHours: number;
   exerciseMinutes: number;
   medicationTaken: boolean;

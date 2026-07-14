@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileShell } from "@/components/layouts/mobile-shell";
-import { AdherenceChart, MultiMetricChart, TrendChart } from "@/components/health/charts";
+import { AdherenceChart, MultiMetricChart, TrendChart, DoctorChartsGrid } from "@/components/health/charts";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { updateRecordStatus, confirmTaskStatus } from "@/lib/services/mock-store";
 import { formatThaiDate } from "@/lib/utils";
@@ -46,7 +46,7 @@ export default function CaregiverPatientPage() {
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
         </TabsList>
         <TabsContent value="monitoring" className="space-y-4">
-          <MultiMetricChart records={records} />
+          <DoctorChartsGrid records={records} className="grid grid-cols-2 gap-3" />
         </TabsContent>
         <TabsContent value="confirm" className="space-y-4">
           {/* Health Records Section */}

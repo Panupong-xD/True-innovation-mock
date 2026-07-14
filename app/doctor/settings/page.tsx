@@ -181,7 +181,7 @@ export default function DoctorSettingsPage() {
             </CardHeader>
             <CardContent className="text-sm leading-6 text-slate-600 space-y-3">
               <p>
-                เชื่อมต่อระบบสำรองข้อมูลทางการแพทย์ผ่าน **TRUE IDC Health Cloud** ซึ่งได้รับการปกป้องระดับมาตรฐานความปลอดภัยโรงพยาบาลระดับสูง
+                เชื่อมต่อระบบสำรองข้อมูลทางการแพทย์ผ่าน **Wellync** ซึ่งได้รับการปกป้องระดับมาตรฐานความปลอดภัยโรงพยาบาลระดับสูง
               </p>
               <div className="rounded-xl bg-sky-50 p-3 text-xs text-sky-700 font-semibold border border-sky-100 flex justify-between items-center">
                 <span>สถานะการซิงค์:</span>

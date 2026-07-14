@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileShell } from "@/components/layouts/mobile-shell";
-import { AdherenceChart, MultiMetricChart, TrendChart } from "@/components/health/charts";
+import { AdherenceChart, MultiMetricChart, TrendChart, DoctorChartsGrid } from "@/components/health/charts";
 import { MockChat } from "@/components/chat/mock-chat";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { addHealthRecord, deleteHealthRecord } from "@/lib/services/mock-store";
@@ -94,7 +94,8 @@ export default function PatientHealthPage() {
     bloodSugar: String(latest.bloodSugar),
     weight: String(latest.weight),
     sleepHours: "7",
-    heartRate: String(latest.heartRate || 72)
+    heartRate: String(latest.heartRate || 72),
+    height: String(patient.height || 170)
   });
 
   const [deviceScanning, setDeviceScanning] = useState(false);
@@ -386,6 +387,7 @@ export default function PatientHealthPage() {
         bloodSugar: Number(form.bloodSugar),
         heartRate: Number(form.heartRate),
         weight: Number(form.weight),
+        height: Number(form.height),
         sleepHours: Number(form.sleepHours),
         exerciseMinutes: latest.exerciseMinutes,
         medicationTaken: true,
@@ -564,6 +566,7 @@ export default function PatientHealthPage() {
                   ["diastolic", "ความดันตัวล่าง (DIA) - mmHg", "ตัวล่าง"],
                   ["bloodSugar", "ระดับน้ำตาล - mg/dL", "น้ำตาล"],
                   ["weight", "น้ำหนักตัว - kg", "น้ำหนัก"],
+                  ["height", "ส่วนสูง - cm", "ส่วนสูง"],
                   ["sleepHours", "ชั่วโมงนอน - ชม.", "ชั่วโมงนอน"],
                   ["heartRate", "ชีพจร - ครั้ง/นาที (bpm)", "ชีพจร"]
                 ].map(([key, label, shortPlaceholder]) => (
@@ -609,7 +612,7 @@ export default function PatientHealthPage() {
         </TabsContent>
 
         <TabsContent value="charts" className="space-y-4">
-          <MultiMetricChart records={records} />
+          <DoctorChartsGrid records={records} className="grid grid-cols-2 gap-3" />
         </TabsContent>
 
         <TabsContent value="food" className="space-y-4">
