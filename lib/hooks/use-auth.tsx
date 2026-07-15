@@ -74,6 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUser(nextUser);
         localStorage.setItem("mock-auth-user", JSON.stringify(nextUser));
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("appt_popup_shown");
+        }
         toast.success("เข้าสู่ระบบสำเร็จ");
         router.push(`/${nextUser.role}`);
         return nextUser;
@@ -215,6 +218,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
         
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("appt_popup_shown");
+        }
         toast.success("สร้างบัญชีสำเร็จ");
         router.push(`/${nextUser.role}`);
         return nextUser;
@@ -226,6 +232,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout: async () => {
         logoutUser();
         setUser(null);
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("appt_popup_shown");
+        }
         router.push("/login");
       }
     }),
