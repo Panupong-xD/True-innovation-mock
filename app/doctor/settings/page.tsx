@@ -171,12 +171,12 @@ export default function DoctorSettingsPage() {
             </CardContent>
           </Card>
 
-          {/* TRUE IDC Cloud Information Card */}
+          {/* WELLYNC Cloud Information Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-800">
                 <Cloud className="h-5 w-5 text-sky-600" />
-                TRUE IDC Cloud
+                WELLYNC Cloud
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm leading-6 text-slate-600 space-y-3">

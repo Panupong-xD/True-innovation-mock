@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/app/providers";
 
 export const metadata: Metadata = {
-  title: "True Health Connect",
+  title: "WELLYNC",
   description: "ต้นแบบแพลตฟอร์มสุขภาพสำหรับผู้ป่วย ผู้ดูแล และแพทย์"
 };
 

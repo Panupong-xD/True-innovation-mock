@@ -612,7 +612,7 @@ export default function PatientHealthPage() {
         </TabsContent>
 
         <TabsContent value="charts" className="space-y-4">
-          <DoctorChartsGrid records={records} className="grid grid-cols-2 gap-3" />
+          <MultiMetricChart records={records} />
         </TabsContent>
 
         <TabsContent value="food" className="space-y-4">

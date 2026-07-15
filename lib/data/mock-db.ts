@@ -230,11 +230,31 @@ function buildNotifications(patients: Patient[]): NotificationItem[] {
       id: "N-3",
       userRole: "caregiver",
       patientId: patient.id,
-      title: "รอยืนยันข้อมูล",
-      message: "ผู้ป่วยบันทึกค่าน้ำตาลล่าสุด โปรดตรวจสอบ",
+      title: "ค้างยืนยันสัญญาณชีพ",
+      message: "สมชาย สุขใจ ได้เพิ่มข้อมูลวัดระดับน้ำตาลในเลือดใหม่ รอคุณตรวจสอบและกดยืนยัน",
       type: "caregiver",
       date: isoDaysAgo(0),
       read: false
+    },
+    {
+      id: "N-3-1",
+      userRole: "caregiver",
+      patientId: patient.id,
+      title: "วันนัดหมายพบแพทย์",
+      message: "พรุ่งนี้เวลา 09:30 น. สมชาย สุขใจ มีนัดพบแพทย์ติดตามผลเบาหวาน ณ โรงพยาบาลปทุมธานี",
+      type: "caregiver",
+      date: isoDaysAgo(0),
+      read: false
+    },
+    {
+      id: "N-3-2",
+      userRole: "caregiver",
+      patientId: patient.id,
+      title: "แจ้งเตือนสภาวะสุขภาพเฝ้าระวัง",
+      message: "ระดับความดันโลหิตเฉลี่ยของ สมชาย สุขใจ สูงเกิน 135 mmHg ติดต่อกัน 3 วัน โปรดกระตุ้นให้คนไข้ทานยาตรงเวลา",
+      type: "caregiver",
+      date: isoDaysAgo(1),
+      read: true
     },
     {
       id: "N-4",

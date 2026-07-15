@@ -45,7 +45,7 @@ export default function CaregiverHomePage() {
     latest.heartRate > 100 || latest.heartRate < 60 ? "yellow" : "green";
 
   return (
-    <MobileShell role="caregiver" title="หน้าหลักผู้ดูแล">
+    <MobileShell role="caregiver" title="WELLYNC">
       <Card className="bg-gradient-to-br from-sky-500 to-teal-400 text-white rounded-[2rem] overflow-hidden">
         <CardContent className="p-5">
           <p className="text-sm font-semibold opacity-90">ดูแลผู้ป่วย 1 คน</p>

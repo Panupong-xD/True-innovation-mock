@@ -32,7 +32,7 @@ export function DoctorShell({ children, title }: { children: React.ReactNode; ti
                 <LayoutDashboard className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-sky-600">TRUE IDC</p>
+                <p className="text-xs font-semibold text-sky-600">WELLYNC</p>
                 <h1 className="text-lg font-bold">Doctor Dashboard</h1>
               </div>
             </div>

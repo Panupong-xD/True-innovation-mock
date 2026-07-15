@@ -69,7 +69,7 @@ export default function PatientProfilePage() {
 
       {/* Hospital details & PDPA status */}
       {[
-        [Building2, "Hospital Connections", `${patient.hospital} · เชื่อมต่อผ่าน TRUE IDC`],
+        [Building2, "Hospital Connections", `${patient.hospital} · เชื่อมต่อผ่าน WELLYNC`],
         [Bluetooth, "Connected Devices", "เครื่องวัดความดัน · เครื่องชั่งน้ำหนัก · Smart Watch"],
         [BellRing, "Notification Settings", "ยา นัดหมาย Early Warning และ AI Recommendation"],
         [Clock, "Consent History", `${consents.length} รายการ · ผู้ป่วยเป็นเจ้าของข้อมูลตาม PDPA`]
