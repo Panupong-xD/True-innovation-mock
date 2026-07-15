@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Protected } from "@/components/auth/protected";
 import { UserRole } from "@/lib/types";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 const navConfig = {
   patient: [
@@ -36,17 +37,33 @@ export function MobileShell({
   const pathname = usePathname();
   const navItems = navConfig[role];
   const { db } = useMockStore();
+  const { user } = useAuth();
 
   // Dynamic notification & alert badges
   let hasIndicator = false;
   if (role === "patient") {
-    // Check for patient notifications (excluding hospital campaigns)
-    hasIndicator = db.notifications.some((n) => n.userRole === "patient" && n.type !== "hospital");
+    // Check for patient notifications that are unread, or consents waiting approval
+    const patientObj = db.patients.find((p) => p.email === user?.email) || db.patients[0];
+    const unreadNotifications = db.notifications.some((n) => n.userRole === "patient" && n.patientId === patientObj.id && !n.read);
+    const waitingConsents = db.consents.some((c) => c.patientId === patientObj.id && c.status === "waiting");
+    hasIndicator = unreadNotifications || waitingConsents;
   } else if (role === "caregiver") {
-    // Check if caregiver's patient is in early warning state (red, orange, or yellow risk)
-    const patientId = db.caregivers[0]?.patientId;
-    const warning = db.earlyWarnings.find((w) => w.patientId === patientId);
-    hasIndicator = warning ? (warning.status === "red" || warning.status === "orange" || warning.status === "yellow") : false;
+    const caregiverObj = db.caregivers.find(c => c.email === user?.email) || db.caregivers[0];
+    const patientObj = db.patients.find((item) => item.id === caregiverObj.patientId) || db.patients[0];
+    
+    // Check for caregiver notifications that are unread
+    const unreadNotifications = db.notifications.some((n) => n.userRole === "caregiver" && n.patientId === patientObj.id && !n.read);
+    
+    // Check for health records pending confirmation
+    const pendingRecords = db.healthRecords.some((r) => r.patientId === patientObj.id && r.confirmationStatus === "pending");
+    
+    // Check for care plan tasks pending caregiver confirmation
+    const pendingTasks = db.carePlans.some((p) => 
+      p.patientId === patientObj.id && 
+      p.tasks.some((t) => t.pendingConfirm)
+    );
+
+    hasIndicator = unreadNotifications || pendingRecords || pendingTasks;
   }
 
   return (
@@ -69,23 +86,23 @@ export function MobileShell({
             {role === "patient" ? (
               <Link
                 href="/patient/notifications"
-                className="flex h-9.5 w-9.5 items-center justify-center rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
                 aria-label="การแจ้งเตือน"
               >
                 <Bell className="h-4.5 w-4.5" />
                 {hasIndicator && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 border border-white animate-bounce" />
+                  <span className="absolute top-[8px] right-[8px] h-[10px] w-[10px] rounded-full bg-red-500" />
                 )}
               </Link>
             ) : (
               <Link
                 href="/caregiver/alerts"
-                className="flex h-9.5 w-9.5 items-center justify-center rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors relative shrink-0"
                 aria-label="การแจ้งเตือนและการดูแลความเสี่ยง"
               >
                 <Bell className="h-4.5 w-4.5" />
                 {hasIndicator && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 border border-white animate-pulse" />
+                  <span className="absolute top-[8px] right-[8px] h-[10px] w-[10px] rounded-full bg-red-500" />
                 )}
               </Link>
             )}

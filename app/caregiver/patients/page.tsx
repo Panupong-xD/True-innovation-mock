@@ -80,7 +80,12 @@ export default function CaregiverPatientPage() {
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-bold text-slate-800">BP {record.systolic}/{record.diastolic} · น้ำตาล {record.bloodSugar}</p>
+                      <div className="flex items-center gap-2">
+                        {record.confirmationStatus === "pending" && (
+                          <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                        )}
+                        <p className="font-bold text-slate-800">BP {record.systolic}/{record.diastolic} · น้ำตาล {record.bloodSugar}</p>
+                      </div>
                       <p className="mt-1 text-xs text-slate-500">{formatThaiDate(record.date)} · บันทึกโดยผู้ป่วย</p>
                     </div>
                     <Badge tone="yellow">รอยืนยัน</Badge>
@@ -106,7 +111,12 @@ export default function CaregiverPatientPage() {
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-bold text-slate-800">{task.title}</p>
+                      <div className="flex items-center gap-2">
+                        {task.pendingConfirm && (
+                          <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                        )}
+                        <p className="font-bold text-slate-800">{task.title}</p>
+                      </div>
                       <p className="mt-1 text-xs text-slate-500">{task.time} · {task.detail}</p>
                     </div>
                     <Badge tone="yellow">

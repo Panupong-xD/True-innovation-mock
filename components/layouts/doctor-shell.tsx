@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 import { Protected } from "@/components/auth/protected";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { useMockStore } from "@/lib/hooks/use-mock-store";
 
 const nav = [
   { href: "/doctor", label: "Dashboard", icon: LayoutDashboard },
   { href: "/doctor/patients", label: "Patients", icon: Users },
   { href: "/doctor/care-plans", label: "Care Plans", icon: ClipboardList },
-  { href: "/doctor/alerts", label: "Alerts", icon: Siren },
   { href: "/doctor/reports", label: "Reports", icon: FileBarChart },
   { href: "/doctor/settings", label: "Settings", icon: Settings }
 ];
@@ -21,6 +21,8 @@ const nav = [
 export function DoctorShell({ children, title }: { children: React.ReactNode; title: string }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { db } = useMockStore();
+  const hasIndicator = db.earlyWarnings.some((w) => w.level !== "green");
   
   return (
     <Protected role="doctor">
@@ -84,10 +86,15 @@ export function DoctorShell({ children, title }: { children: React.ReactNode; ti
                 <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
               </div>
               <div className="flex items-center gap-2">
-                <button className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                <Link
+                  href="/doctor/alerts"
+                  className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition-colors"
+                >
                   <Bell className="h-5 w-5" />
-                  <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500" />
-                </button>
+                  {hasIndicator && (
+                    <span className="absolute top-[9px] right-[9px] h-[11px] w-[11px] rounded-full bg-red-500" />
+                  )}
+                </Link>
                 <button 
                   className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 hover:bg-rose-100 lg:hidden border-none"
                   onClick={logout}
@@ -105,7 +112,7 @@ export function DoctorShell({ children, title }: { children: React.ReactNode; ti
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "rounded-full px-4 py-2 text-sm font-semibold text-slate-600",
+                      "rounded-full px-4 py-2 text-sm font-semibold text-slate-600 shrink-0",
                       active && "bg-sky-100 text-sky-700"
                     )}
                   >

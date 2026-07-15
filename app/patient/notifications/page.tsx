@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Bell, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,24 @@ export default function PatientNotificationsPage() {
   const notifications = db.notifications.filter((item) => item.userRole === "patient" && item.patientId === patient.id);
   const consents = db.consents.filter((item) => item.patientId === patient.id);
 
+  // Mark patient alerts as read when they navigate away
+  useEffect(() => {
+    return () => {
+      setDb((current) => {
+        const hasUnread = current.notifications.some(
+          (n) => n.userRole === "patient" && n.patientId === patient.id && !n.read
+        );
+        if (!hasUnread) return current;
+        return {
+          ...current,
+          notifications: current.notifications.map((n) =>
+            n.userRole === "patient" && n.patientId === patient.id ? { ...n, read: true } : n
+          )
+        };
+      });
+    };
+  }, [patient.id, setDb]);
+
   return (
     <MobileShell role="patient" title="แจ้งเตือน">
       <Card>
@@ -26,7 +45,12 @@ export default function PatientNotificationsPage() {
             <div key={consent.id} className="rounded-2xl bg-sky-50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-bold">{consent.hospital}</p>
+                  <div className="flex items-center gap-2">
+                    {consent.status === "waiting" && (
+                      <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                    )}
+                    <p className="font-bold">{consent.hospital}</p>
+                  </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">{consent.reason}</p>
                 </div>
                 <Badge tone={consent.status === "approved" ? "green" : consent.status === "rejected" ? "red" : "yellow"}>
@@ -52,7 +76,12 @@ export default function PatientNotificationsPage() {
                 <Bell className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-bold">{item.title}</p>
+                <div className="flex items-center gap-2">
+                  {!item.read && (
+                    <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0 animate-pulse" />
+                  )}
+                  <p className="font-bold">{item.title}</p>
+                </div>
                 <p className="mt-1 text-sm leading-6 text-slate-500">{item.message}</p>
                 <p className="mt-2 text-xs font-semibold text-sky-700">{formatThaiDate(item.date)}</p>
               </div>
