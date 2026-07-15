@@ -170,7 +170,7 @@ function buildCarePlans(patients: Patient[]): CarePlan[] {
     status: index % 3 === 0 ? "draft" : "published",
     updatedAt: isoDaysAgo(index % 6),
     summary: "แผนดูแลที่บ้านเน้นควบคุมความดัน น้ำตาล และเพิ่มกิจกรรมแบบค่อยเป็นค่อยไป",
-    medication: ["รับประทานยาตามแพทย์สั่งหลังอาหารเช้า", "ตรวจสอบอาการเวียนศีรษะหลังเริ่มยา"],
+    medication: ["รับประทานยา Metformin 500 mg และ Amlodipine 5 mg หลังอาหารเช้า เวลา 08:00 น.", "ตรวจสอบอาการเวียนศีรษะหลังเริ่มยา Amlodipine"],
     diet: ["ลดเค็ม เลือกอาหารต้ม/นึ่ง", "แบ่งคาร์โบไฮเดรตเป็นมื้อเล็ก", "หลีกเลี่ยงเครื่องดื่มหวาน"],
     exercise: ["เดินเร็ว 20 นาที 5 วันต่อสัปดาห์", "ยืดเหยียดก่อนนอน 8 นาที"],
     measurement: ["วัดความดันเช้าและก่อนนอน", "บันทึกน้ำตาลหลังอาหาร 2 ชั่วโมง"],
@@ -182,7 +182,7 @@ function buildCarePlans(patients: Patient[]): CarePlan[] {
         title: "รับประทานยาเช้า",
         category: "medication",
         time: "08:00",
-        detail: "Metformin หลังอาหาร",
+        detail: "Metformin 500 mg & Amlodipine 5 mg (หลังอาหาร)",
         status: "pending"
       },
       {
@@ -241,7 +241,7 @@ function buildNotifications(patients: Patient[]): NotificationItem[] {
       userRole: "caregiver",
       patientId: patient.id,
       title: "วันนัดหมายพบแพทย์",
-      message: "พรุ่งนี้เวลา 09:30 น. สมชาย สุขใจ มีนัดพบแพทย์ติดตามผลเบาหวาน ณ โรงพยาบาลปทุมธานี",
+      message: `พรุ่งนี้เวลา 09:30 น. ${patient.name} มีนัดพบแพทย์ติดตามผลเบาหวาน ณ ${patient.hospital}`,
       type: "caregiver",
       date: isoDaysAgo(0),
       read: false

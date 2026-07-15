@@ -213,27 +213,6 @@ export default function CaregiverCarePlanPage() {
                 </div>
               </div>
 
-              {/* Verification Buttons - only active for today */}
-              {selectedDate === 11 && task.pendingConfirm ? (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="success" 
-                    onClick={() => setDb((current) => confirmTaskStatus(current, plan.id, task.id, true))}
-                    className="flex items-center justify-center gap-1.5"
-                  >
-                    <Check className="h-4 w-4" /> อนุมัติบันทึก
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    onClick={() => setDb((current) => confirmTaskStatus(current, plan.id, task.id, false))}
-                    className="flex items-center justify-center gap-1.5"
-                  >
-                    <X className="h-4 w-4" /> ปฏิเสธ
-                  </Button>
-                </div>
-              ) : null}
             </div>
           ))}
         </CardContent>

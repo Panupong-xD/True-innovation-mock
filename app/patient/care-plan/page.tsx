@@ -212,20 +212,6 @@ export default function PatientCarePlanPage() {
                 </div>
               </div>
 
-              {/* Action checklist buttons */}
-              {selectedDate === 11 && !task.pendingConfirm && task.status === "pending" ? (
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  <Button size="sm" variant="success" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "completed"))}>
-                    <Check className="h-4 w-4" /> ทำแล้ว
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "skipped"))}>
-                    <RotateCcw className="h-4 w-4" /> ข้าม
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => setDb((current) => proposeTaskStatus(current, plan.id, task.id, "cannot"))}>
-                    <CircleSlash className="h-4 w-4" /> ทำไม่ได้
-                  </Button>
-                </div>
-              ) : null}
             </div>
           ))}
         </CardContent>

@@ -11,6 +11,22 @@ export async function askAI(content: string, files?: Array<{ type: string; name:
     model = localStorage.getItem("swu-model") || process.env.NEXT_PUBLIC_SWU_MODEL || "";
   }
 
+  // Handle multimodal model fallback for vision tasks (e.g. food/device scanning)
+  let targetModel = model || "google/gemini-2.5-flash";
+  if (files && files.length > 0) {
+    const mLower = targetModel.toLowerCase();
+    const isVisionSupported = 
+      mLower.includes("gemini") || 
+      mLower.includes("gpt-4") || 
+      mLower.includes("claude-3-5") || 
+      mLower.includes("claude-3-opus") || 
+      mLower.includes("claude-3-sonnet");
+      
+    if (!isVisionSupported) {
+      targetModel = "google/gemini-2.5-flash";
+    }
+  }
+
   // 1. Try calling the SWU AI API directly from the browser (bypasses TLS fingerprint block if on campus/VPN)
   if (apiKey && userId) {
     try {
@@ -22,7 +38,7 @@ export async function askAI(content: string, files?: Array<{ type: string; name:
         },
         body: JSON.stringify({
           user_id: userId,
-          model: model || "google/gemini-2.5-flash",
+          model: targetModel,
           content,
           files: files || []
         })
@@ -52,7 +68,7 @@ export async function askAI(content: string, files?: Array<{ type: string; name:
   const response = await fetch("/api/ai/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, model, apiKey, userId, files })
+    body: JSON.stringify({ content, model: targetModel, apiKey, userId, files })
   });
 
   const payload = (await response.json()) as {
