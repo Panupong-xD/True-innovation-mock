@@ -8,13 +8,39 @@ import { MobileShell } from "@/components/layouts/mobile-shell";
 import { MockChat } from "@/components/chat/mock-chat";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 
+import { useAuth } from "@/lib/hooks/use-auth";
+
 export default function CaregiverAiPage() {
   const { db } = useMockStore();
-  const caregiver = db.caregivers[0];
-  const patient = db.patients.find((item) => item.id === caregiver.patientId)!;
+  const { user } = useAuth();
+  const caregiver = db.caregivers.find(c => c.email === user?.email) || db.caregivers[0];
+  const patient = db.patients.find((item) => item.id === caregiver.patientId) || db.patients[0];
   const records = db.healthRecords.filter((item) => item.patientId === patient.id);
-  const latest = records[records.length - 1];
-  const plan = db.carePlans.find((item) => item.patientId === patient.id)!;
+  const latest = records[records.length - 1] || {
+    systolic: 120,
+    diastolic: 80,
+    bloodSugar: 95,
+    heartRate: 72,
+    weight: patient.weight || 70,
+    height: patient.height || 170,
+    sleepHours: 7.5,
+    confirmationStatus: "confirmed"
+  };
+  const plan = db.carePlans.find((item) => item.patientId === patient.id) || {
+    id: `plan-${patient.id}`,
+    patientId: patient.id,
+    doctorId: "demo-doctor",
+    status: "approved",
+    updatedAt: new Date().toISOString(),
+    summary: "ควบคุมอาหารเค็มและน้ำตาลอย่างสม่ำเสมอ ออกกำลังกายเบาๆ",
+    medication: ["Metformin 500mg (เช้า-เย็น หลังอาหาร)", "Amlodipine 5mg (เช้า หลังอาหาร)"],
+    diet: ["ลดคาร์โบไฮเดรตเชิงเดี่ยว ชา กาแฟหวาน", "เน้นโปรตีนไขมันต่ำ ผักต้ม"],
+    exercise: ["เดินเร็ว 30 นาทีต่อวัน", "สัปดาห์ละ 3-5 วัน"],
+    measurement: ["วัดความดันทุกเช้าก่อนทานอาหาร", "เจาะระดับน้ำตาลสัปดาห์ละ 2 ครั้ง"],
+    followUp: ["พบแพทย์เพื่อประเมินผลในอีก 2 เดือน"],
+    lifestyle: ["นอนหลับพักผ่อนให้เพียงพอ 7-8 ชั่วโมง", "ดื่มน้ำสะอาดวันละ 8 แก้ว"],
+    tasks: []
+  };
   return (
     <MobileShell role="caregiver" title="ผู้ช่วย AI">
       <MockChat

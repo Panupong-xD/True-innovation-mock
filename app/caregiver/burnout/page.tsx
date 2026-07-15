@@ -10,9 +10,12 @@ import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { toast } from "sonner";
 
+import { useAuth } from "@/lib/hooks/use-auth";
+
 export default function BurnoutPage() {
   const { db, setDb } = useMockStore();
-  const caregiver = db.caregivers[0];
+  const { user } = useAuth();
+  const caregiver = db.caregivers.find(c => c.email === user?.email) || db.caregivers[0];
   const [score, setScore] = useState(caregiver.mcsiScore);
   const level = score > 26 ? "สูง" : score > 15 ? "ปานกลาง" : "ต่ำ";
   const records = db.healthRecords.filter((item) => item.patientId === caregiver.patientId);

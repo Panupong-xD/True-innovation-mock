@@ -20,9 +20,41 @@ export default function PatientHomePage() {
   const { user } = useAuth();
   const patient = db.patients.find((item) => item.email === user?.email) || db.patients[0];
   const records = db.healthRecords.filter((record) => record.patientId === patient.id);
-  const latest = records[records.length - 1];
-  const plan = db.carePlans.find((item) => item.patientId === patient.id)!;
-  const warning = db.earlyWarnings.find((item) => item.patientId === patient.id)!;
+  const latest = records[records.length - 1] || {
+    systolic: 120,
+    diastolic: 80,
+    bloodSugar: 95,
+    heartRate: 72,
+    weight: patient.weight || 70,
+    height: patient.height || 170,
+    sleepHours: 7.5,
+    confirmationStatus: "confirmed"
+  };
+  const plan = db.carePlans.find((item) => item.patientId === patient.id) || {
+    id: `plan-${patient.id}`,
+    patientId: patient.id,
+    doctorId: "demo-doctor",
+    status: "approved",
+    updatedAt: new Date().toISOString(),
+    summary: "ควบคุมอาหารเค็มและน้ำตาลอย่างสม่ำเสมอ ออกกำลังกายเบาๆ",
+    medication: ["Metformin 500mg (เช้า-เย็น หลังอาหาร)", "Amlodipine 5mg (เช้า หลังอาหาร)"],
+    diet: ["ลดคาร์โบไฮเดรตเชิงเดี่ยว ชา กาแฟหวาน", "เน้นโปรตีนไขมันต่ำ ผักต้ม"],
+    exercise: ["เดินเร็ว 30 นาทีต่อวัน", "สัปดาห์ละ 3-5 วัน"],
+    measurement: ["วัดความดันทุกเช้าก่อนทานอาหาร", "เจาะระดับน้ำตาลสัปดาห์ละ 2 ครั้ง"],
+    followUp: ["พบแพทย์เพื่อประเมินผลในอีก 2 เดือน"],
+    lifestyle: ["นอนหลับพักผ่อนให้เพียงพอ 7-8 ชั่วโมง", "ดื่มน้ำสะอาดวันละ 8 แก้ว"],
+    tasks: []
+  };
+  const warning = db.earlyWarnings.find((item) => item.patientId === patient.id) || {
+    patientId: patient.id,
+    level: "normal" as const,
+    score: 0,
+    reason: "กำลังวิเคราะห์ข้อมูลประวัติสุขภาพเริ่มต้น",
+    patientRecommendation: "กรุณารอสักครู่ขณะเชื่อมโยงแผนการดูแลของท่าน",
+    doctorRecommendation: "ไม่มีข้อควรระวังเร่งด่วนในขณะนี้",
+    suggestedAction: "เฝ้าระวังต่อเนื่อง",
+    updatedAt: new Date().toISOString()
+  };
   const notification = db.notifications.find((item) => item.userRole === "patient" && item.type !== "hospital");
   const completed = plan.tasks.filter((task) => task.status === "completed").length;
 
@@ -41,6 +73,52 @@ export default function PatientHomePage() {
     sessionStorage.setItem("appt_popup_shown", "true");
     setShowApptPopup(false);
   };
+
+  useEffect(() => {
+    if (patient && patient.id !== "P-0001") {
+      const patientRecords = db.healthRecords.filter(r => r.patientId === patient.id);
+      if (patientRecords.length === 0) {
+        const templateId = "P-0001";
+        const somchaiRecords = db.healthRecords.filter(r => r.patientId === templateId);
+        const clonedRecords = somchaiRecords.map((r, idx) => ({
+          ...r,
+          id: `${patient.id}-R-${idx}-${Date.now()}`,
+          patientId: patient.id,
+          weight: patient.weight || 70,
+          height: patient.height || 170
+        }));
+
+        const somchaiCarePlan = db.carePlans.find(cp => cp.patientId === templateId);
+        const clonedCarePlan = somchaiCarePlan ? {
+          ...somchaiCarePlan,
+          id: `plan-${patient.id}`,
+          patientId: patient.id,
+          tasks: somchaiCarePlan.tasks.map((t, idx) => ({
+            ...t,
+            id: `task-${patient.id}-${idx}`,
+            status: "pending" as const,
+            pendingConfirm: undefined
+          }))
+        } : null;
+
+        const somchaiWarning = db.earlyWarnings.find(ew => ew.patientId === templateId);
+        const clonedWarning = somchaiWarning ? {
+          ...somchaiWarning,
+          patientId: patient.id
+        } : null;
+
+        setDb((current) => {
+          if (current.healthRecords.some(r => r.patientId === patient.id)) return current;
+          return {
+            ...current,
+            healthRecords: [...current.healthRecords, ...clonedRecords],
+            earlyWarnings: clonedWarning ? [...current.earlyWarnings.filter(w => w.patientId !== patient.id), clonedWarning] : current.earlyWarnings,
+            carePlans: clonedCarePlan ? [...current.carePlans.filter(p => p.patientId !== patient.id), clonedCarePlan] : current.carePlans
+          };
+        });
+      }
+    }
+  }, [patient, db.healthRecords, db.earlyWarnings, db.carePlans, setDb]);
 
   // Dynamic calculations
   const height = latest.height || patient.height || 170;

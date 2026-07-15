@@ -6,11 +6,11 @@ import { MockStoreProvider } from "@/lib/hooks/use-mock-store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <MockStoreProvider>
+    <MockStoreProvider>
+      <AuthProvider>
         {children}
         <Toaster richColors position="top-center" />
-      </MockStoreProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </MockStoreProvider>
   );
 }

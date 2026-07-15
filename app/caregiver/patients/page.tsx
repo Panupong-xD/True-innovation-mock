@@ -12,10 +12,13 @@ import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { updateRecordStatus, confirmTaskStatus } from "@/lib/services/mock-store";
 import { formatThaiDate } from "@/lib/utils";
 
+import { useAuth } from "@/lib/hooks/use-auth";
+
 export default function CaregiverPatientPage() {
   const { db, setDb } = useMockStore();
-  const caregiver = db.caregivers[0];
-  const patient = db.patients.find((item) => item.id === caregiver.patientId)!;
+  const { user } = useAuth();
+  const caregiver = db.caregivers.find(c => c.email === user?.email) || db.caregivers[0];
+  const patient = db.patients.find((item) => item.id === caregiver.patientId) || db.patients[0];
   const records = db.healthRecords.filter((item) => item.patientId === patient.id);
   const pending = records.filter((item) => item.confirmationStatus === "pending").slice(-6).reverse();
   const pendingTasks = db.carePlans

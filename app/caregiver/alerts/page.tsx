@@ -6,9 +6,12 @@ import { MobileShell } from "@/components/layouts/mobile-shell";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 import { formatThaiDate } from "@/lib/utils";
 
+import { useAuth } from "@/lib/hooks/use-auth";
+
 export default function CaregiverAlertsPage() {
   const { db } = useMockStore();
-  const caregiver = db.caregivers[0];
+  const { user } = useAuth();
+  const caregiver = db.caregivers.find(c => c.email === user?.email) || db.caregivers[0];
   const patient = db.patients.find((item) => item.id === caregiver.patientId) || db.patients[0];
   const notifications = db.notifications.filter((item) => item.userRole === "caregiver" && item.patientId === patient.id);
 

@@ -69,7 +69,17 @@ export default function PatientHealthPage() {
     () => db.healthRecords.filter((record) => record.patientId === patient.id),
     [db.healthRecords, patient.id]
   );
-  const latest = records[records.length - 1];
+  const latest = records[records.length - 1] || {
+    systolic: 120,
+    diastolic: 80,
+    bloodSugar: 95,
+    heartRate: 72,
+    weight: patient.weight || 70,
+    height: patient.height || 170,
+    sleepHours: 7.5,
+    confirmationStatus: "confirmed"
+  };
+
   interface FoodAnalysis {
     name: string;
     calories: string;
@@ -88,6 +98,7 @@ export default function PatientHealthPage() {
   const [foodImage, setFoodImage] = useState<string | null>(null);
   const [foodNameInput, setFoodNameInput] = useState("");
   const [foodFilesPayload, setFoodFilesPayload] = useState<Array<{ type: string; name: string; data: string }>>([]);
+  
   const [form, setForm] = useState({
     systolic: String(latest.systolic),
     diastolic: String(latest.diastolic),
@@ -97,6 +108,66 @@ export default function PatientHealthPage() {
     heartRate: String(latest.heartRate || 72),
     height: String(patient.height || 170)
   });
+
+  useEffect(() => {
+    if (latest) {
+      setForm({
+        systolic: String(latest.systolic),
+        diastolic: String(latest.diastolic),
+        bloodSugar: String(latest.bloodSugar),
+        weight: String(latest.weight),
+        sleepHours: "7",
+        heartRate: String(latest.heartRate || 72),
+        height: String(patient.height || 170)
+      });
+    }
+  }, [latest, patient.height]);
+
+  useEffect(() => {
+    if (patient && patient.id !== "P-0001") {
+      const patientRecords = db.healthRecords.filter(r => r.patientId === patient.id);
+      if (patientRecords.length === 0) {
+        const templateId = "P-0001";
+        const somchaiRecords = db.healthRecords.filter(r => r.patientId === templateId);
+        const clonedRecords = somchaiRecords.map((r, idx) => ({
+          ...r,
+          id: `${patient.id}-R-${idx}-${Date.now()}`,
+          patientId: patient.id,
+          weight: patient.weight || 70,
+          height: patient.height || 170
+        }));
+
+        const somchaiCarePlan = db.carePlans.find(cp => cp.patientId === templateId);
+        const clonedCarePlan = somchaiCarePlan ? {
+          ...somchaiCarePlan,
+          id: `plan-${patient.id}`,
+          patientId: patient.id,
+          tasks: somchaiCarePlan.tasks.map((t, idx) => ({
+            ...t,
+            id: `task-${patient.id}-${idx}`,
+            status: "pending" as const,
+            pendingConfirm: undefined
+          }))
+        } : null;
+
+        const somchaiWarning = db.earlyWarnings.find(ew => ew.patientId === templateId);
+        const clonedWarning = somchaiWarning ? {
+          ...somchaiWarning,
+          patientId: patient.id
+        } : null;
+
+        setDb((current) => {
+          if (current.healthRecords.some(r => r.patientId === patient.id)) return current;
+          return {
+            ...current,
+            healthRecords: [...current.healthRecords, ...clonedRecords],
+            earlyWarnings: clonedWarning ? [...current.earlyWarnings.filter(w => w.patientId !== patient.id), clonedWarning] : current.earlyWarnings,
+            carePlans: clonedCarePlan ? [...current.carePlans.filter(p => p.patientId !== patient.id), clonedCarePlan] : current.carePlans
+          };
+        });
+      }
+    }
+  }, [patient, db.healthRecords, db.earlyWarnings, db.carePlans, setDb]);
 
   const [deviceScanning, setDeviceScanning] = useState(false);
   const [deviceImagePreview, setDeviceImagePreview] = useState("");

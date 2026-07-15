@@ -9,10 +9,10 @@ import { useAuth } from "@/lib/hooks/use-auth";
 import { useMockStore } from "@/lib/hooks/use-mock-store";
 
 export default function CaregiverProfilePage() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { db } = useMockStore();
-  const caregiver = db.caregivers[0];
-  const patient = db.patients.find((item) => item.id === caregiver.patientId)!;
+  const caregiver = db.caregivers.find(c => c.email === user?.email) || db.caregivers[0];
+  const patient = db.patients.find((item) => item.id === caregiver.patientId) || db.patients[0];
 
   return (
     <MobileShell role="caregiver" title="โปรไฟล์">
